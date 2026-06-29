@@ -99,6 +99,15 @@ app.delete("/users/:id", async (req, res) => {
     }
 });
 
+const protect = require("./middleware/authMiddleware");
+
+app.get("/profile", protect, (req, res) => {
+    res.json({
+        message: "Protected Route",
+        user: req.user
+    });
+});
+
 app.listen(5000, () => {
     console.log("Server running on port 5000");
 });
