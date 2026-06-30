@@ -19,7 +19,7 @@ function Signup() {
 
     console.log(formData);
 
-    // Backend connection will be added next
+    
   };
 
   return (
