@@ -1,36 +1,89 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { updateProfile } from "../services/profileService";
+
 function CompleteProfile() {
-  return (
-    <div>
-      <h1>Complete Your Profile</h1>
 
-      <form>
-        <input
-          type="text"
-          placeholder="Bio"
-        />
+    const navigate = useNavigate();
 
-        <br /><br />
+    const [formData, setFormData] = useState({
+        bio: "",
+        location: "",
+        profilePicture: ""
+    });
 
-        <input
-          type="text"
-          placeholder="Location"
-        />
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
 
-        <br /><br />
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        <input
-          type="text"
-          placeholder="Profile Picture URL"
-        />
+        try {
 
-        <br /><br />
+            await updateProfile(formData);
 
-        <button>
-          Save Profile
-        </button>
-      </form>
-    </div>
-  );
+            alert("Profile updated successfully");
+
+            navigate("/home");
+
+        } catch (error) {
+
+            const message =
+                error.response?.data?.message || error.message;
+
+            alert(message);
+        }
+    };
+
+    return (
+        <div>
+
+            <h1>Complete Your Profile</h1>
+
+            <form onSubmit={handleSubmit}>
+
+                <input
+                    type="text"
+                    name="bio"
+                    placeholder="Bio"
+                    value={formData.bio}
+                    onChange={handleChange}
+                />
+
+                <br /><br />
+
+                <input
+                    type="text"
+                    name="location"
+                    placeholder="Location"
+                    value={formData.location}
+                    onChange={handleChange}
+                />
+
+                <br /><br />
+
+                <input
+                    type="text"
+                    name="profilePicture"
+                    placeholder="Profile Picture URL"
+                    value={formData.profilePicture}
+                    onChange={handleChange}
+                />
+
+                <br /><br />
+
+                <button type="submit">
+                    Save Profile
+                </button>
+
+            </form>
+
+        </div>
+    );
 }
 
 export default CompleteProfile;

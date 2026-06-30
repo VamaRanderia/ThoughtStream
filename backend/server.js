@@ -5,6 +5,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const User = require("./models/User");
 const authRoutes = require("./routes/authRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 const protect = require("./middleware/authMiddleware");
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({
