@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { login } from "../services/authService";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -13,12 +14,24 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    console.log(formData);
+  try {
+    const data = await login(formData);
 
-  };
+    console.log(data);
+
+    localStorage.setItem("token", data.token);
+
+    alert("Login Successful!");
+  } catch (error) {
+    const message = error.response?.data?.message || error.message;
+    console.log(message);
+
+    alert(message || "Invalid Credentials");
+  }
+};
 
   return (
     <div>

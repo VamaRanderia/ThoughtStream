@@ -1,8 +1,12 @@
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+
 function App() {
-  return <Signup/>;
-  return <Login/>;
+  return (
+    <>
+      <Login/>
+    </>
+  );
 }
 
 export default App;

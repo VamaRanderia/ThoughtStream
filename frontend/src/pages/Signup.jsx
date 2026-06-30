@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { signup } from "../services/authService";
 
 function Signup() {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -14,13 +15,24 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    console.log(formData);
+  try {
+    const data = await signup(formData);
 
-    
-  };
+    console.log(data);
+    localStorage.setItem("token", data.token);
+
+    alert("Signup Successful!");
+
+  } catch (error) {
+    const message = error.response?.data?.message || error.message;
+    console.log(message);
+
+    alert(message || "Signup Failed!");
+  }
+};
 
   return (
     <div>
@@ -29,9 +41,9 @@ function Signup() {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="name"
+          name="username"
           placeholder="Enter Name"
-          value={formData.name}
+          value={formData.username}
           onChange={handleChange}
           required
         />
