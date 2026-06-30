@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { signup } from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    confirmPassword: ""
   });
 
   const handleChange = (e) => {
@@ -18,13 +23,19 @@ function Signup() {
 const handleSubmit = async (e) => {
   e.preventDefault();
 
+  // Check if passwords match
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
   try {
     const data = await signup(formData);
 
     console.log(data);
     localStorage.setItem("token", data.token);
 
-    alert("Signup Successful!");
+    navigate("/complete-profile");
 
   } catch (error) {
     const message = error.response?.data?.message || error.message;
@@ -71,6 +82,16 @@ const handleSubmit = async (e) => {
         />
 
         <br /><br />
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          required
+        />
+
+        <br/><br/>
 
         <button type="submit">
           Signup
