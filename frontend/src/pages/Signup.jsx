@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signup } from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Signup() {
 
@@ -46,11 +47,22 @@ const handleSubmit = async (e) => {
 };
 
   return (
-    <div>
-      <h1>Signup</h1>
+  <div className="auth-page">
+
+    <div className="auth-card">
+
+      <h1 className="logo">
+        ThoughtStream
+      </h1>
+
+      <h3 className="auth-title">
+        Create Account
+      </h3>
 
       <form onSubmit={handleSubmit}>
+
         <input
+          className="form-control mb-3"
           type="text"
           name="username"
           placeholder="Enter Name"
@@ -59,9 +71,8 @@ const handleSubmit = async (e) => {
           required
         />
 
-        <br /><br />
-
         <input
+          className="form-control mb-3"
           type="email"
           name="email"
           placeholder="Enter Email"
@@ -70,9 +81,8 @@ const handleSubmit = async (e) => {
           required
         />
 
-        <br /><br />
-
         <input
+          className="form-control mb-3"
           type="password"
           name="password"
           placeholder="Enter Password"
@@ -81,8 +91,8 @@ const handleSubmit = async (e) => {
           required
         />
 
-        <br /><br />
         <input
+          className="form-control mb-4"
           type="password"
           name="confirmPassword"
           placeholder="Confirm Password"
@@ -91,13 +101,23 @@ const handleSubmit = async (e) => {
           required
         />
 
-        <br/><br/>
-
-        <button type="submit">
-          Signup
+        <button
+          type="submit"
+          className="btn-accent"
+        >
+          Sign Up
         </button>
+
       </form>
+
+      <p className="auth-footer">
+        Already have an account?{" "}
+        <Link to="/login">Login</Link>
+      </p>
+
     </div>
+
+  </div>
   );
 }
 

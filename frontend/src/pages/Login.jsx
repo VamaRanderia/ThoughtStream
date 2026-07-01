@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { login } from "../services/authService";
+import { Link } from "react-router-dom";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -34,11 +35,22 @@ const handleSubmit = async (e) => {
 };
 
   return (
-    <div>
-      <h1>Login</h1>
+  <div className="auth-page">
+
+    <div className="auth-card">
+
+      <h1 className="logo">
+        ThoughtStream
+      </h1>
+
+      <h3 className="auth-title">
+        Welcome Back
+      </h3>
 
       <form onSubmit={handleSubmit}>
+
         <input
+          className="form-control mb-3"
           type="email"
           name="email"
           placeholder="Enter Email"
@@ -47,9 +59,8 @@ const handleSubmit = async (e) => {
           required
         />
 
-        <br /><br />
-
         <input
+          className="form-control mb-4"
           type="password"
           name="password"
           placeholder="Enter Password"
@@ -58,13 +69,23 @@ const handleSubmit = async (e) => {
           required
         />
 
-        <br/><br/>
-
-        <button type="submit">
+        <button
+          type="submit"
+          className="btn-accent"
+        >
           Login
         </button>
+
       </form>
+
+      <p className="auth-footer">
+        Don't have an account?{" "}
+        <Link to="/signup">Sign Up</Link>
+      </p>
+
     </div>
+
+  </div>
   );
 }
 

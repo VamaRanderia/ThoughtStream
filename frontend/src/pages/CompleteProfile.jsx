@@ -40,50 +40,60 @@ function CompleteProfile() {
     };
 
     return (
-        <div>
+  <div className="auth-page">
 
-            <h1>Complete Your Profile</h1>
+    <div className="auth-card">
 
-            <form onSubmit={handleSubmit}>
+      <h1 className="logo">
+        ThoughtStream
+      </h1>
 
-                <input
-                    type="text"
-                    name="bio"
-                    placeholder="Bio"
-                    value={formData.bio}
-                    onChange={handleChange}
-                />
+      <h3 className="auth-title">
+        Complete Your Profile
+      </h3>
 
-                <br /><br />
+      <form onSubmit={handleSubmit}>
 
-                <input
-                    type="text"
-                    name="location"
-                    placeholder="Location"
-                    value={formData.location}
-                    onChange={handleChange}
-                />
+        <input
+          className="form-control mb-3"
+          type="text"
+          name="bio"
+          placeholder="Bio"
+          value={formData.bio}
+          onChange={handleChange}
+        />
 
-                <br /><br />
+        <input
+          className="form-control mb-3"
+          type="text"
+          name="location"
+          placeholder="Location"
+          value={formData.location}
+          onChange={handleChange}
+        />
 
-                <input
-                    type="text"
-                    name="profilePicture"
-                    placeholder="Profile Picture URL"
-                    value={formData.profilePicture}
-                    onChange={handleChange}
-                />
+        <input
+          className="form-control mb-4"
+          type="text"
+          name="profilePicture"
+          placeholder="Profile Picture URL"
+          value={formData.profilePicture}
+          onChange={handleChange}
+        />
 
-                <br /><br />
+        <button
+          type="submit"
+          className="btn-accent"
+        >
+          Save Profile
+        </button>
 
-                <button type="submit">
-                    Save Profile
-                </button>
+      </form>
 
-            </form>
+    </div>
 
-        </div>
-    );
+  </div>
+);
 }
 
 export default CompleteProfile;
