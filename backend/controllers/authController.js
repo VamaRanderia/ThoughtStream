@@ -14,7 +14,6 @@ const generateToken = (id) => {
 
 const registerUser = async (req, res) => {
     try {
-
         const { username, email, password } = req.body;
 
         if (!username || !email || !password) {
@@ -23,7 +22,6 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Check if email already exists
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -36,15 +34,12 @@ const registerUser = async (req, res) => {
 
         if (!passwordRegex.test(password)) {
             return res.status(400).json({
-            message:
-                "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+                message: "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
             });
         }
         
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
         const user = await User.create({
             username,
             email,
@@ -59,7 +54,8 @@ const registerUser = async (req, res) => {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                isProfileComplete: user.isProfileComplete
             }
         });
 
@@ -80,7 +76,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -113,15 +108,14 @@ const loginUser = async (req, res) => {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                isProfileComplete: user.isProfileComplete
             }
         });
     } catch (error) {
-
         res.status(500).json({
             message: error.message
         });
-
     }
 };
 

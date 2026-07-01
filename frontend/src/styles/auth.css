@@ -110,6 +110,20 @@
 
 }
 
+.error-text {
+  color: #ff8a8a;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+.password-note {
+  color: #b5b5b5;
+  font-size: 0.75rem;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 .auth-footer{
 
     margin-top:20px;
