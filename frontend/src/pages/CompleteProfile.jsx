@@ -3,97 +3,113 @@ import { useNavigate } from "react-router-dom";
 import { updateProfile } from "../services/profileService";
 
 function CompleteProfile() {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    bio: "",
+    location: "",
+    profilePicture: ""
+  });
 
-    const [formData, setFormData] = useState({
-        bio: "",
-        location: "",
-        profilePicture: ""
+  // alert banners
+  const [alert, setAlert] = useState({
+    type: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // clear any previous banner before running a new request
+    setAlert({
+      type: "",
+      message: "",
     });
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+    try {
+      await updateProfile(formData);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      // success banner 
+      setAlert({
+        type: "success",
+        message: "Profile updated successfully!",
+      });
 
-        try {
+      setTimeout(() => {
+        navigate("/home");
+      }, 1500);
 
-            await updateProfile(formData);
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
 
-            alert("Profile updated successfully");
+      setAlert({
+        type: "danger",
+        message: message || "Failed to update profile.",
+      });
+    }
+  };
 
-            navigate("/home");
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1 className="logo">ThoughtStream</h1>
+        <h3 className="auth-title">Complete Your Profile</h3>
 
-        } catch (error) {
+        {/* Dynamic Bootstrap Alert Banner */}
+        {alert.message && (
+          <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert">
+            {alert.message}
+            <button
+              type="button"
+              className="btn-close"
+              aria-label="Close"
+              onClick={() => setAlert({ type: "", message: "" })}
+            ></button>
+          </div>
+        )}
 
-            const message =
-                error.response?.data?.message || error.message;
+        <form onSubmit={handleSubmit}>
+          <input
+            className="form-control mb-3"
+            type="text"
+            name="bio"
+            placeholder="Bio"
+            value={formData.bio}
+            onChange={handleChange}
+          />
 
-            alert(message);
-        }
-    };
+          <input
+            className="form-control mb-3"
+            type="text"
+            name="location"
+            placeholder="Location"
+            value={formData.location}
+            onChange={handleChange}
+          />
 
-    return (
-  <div className="auth-page">
+          <input
+            className="form-control mb-4"
+            type="text"
+            name="profilePicture"
+            placeholder="Profile Picture URL"
+            value={formData.profilePicture}
+            onChange={handleChange}
+          />
 
-    <div className="auth-card">
-
-      <h1 className="logo">
-        ThoughtStream
-      </h1>
-
-      <h3 className="auth-title">
-        Complete Your Profile
-      </h3>
-
-      <form onSubmit={handleSubmit}>
-
-        <input
-          className="form-control mb-3"
-          type="text"
-          name="bio"
-          placeholder="Bio"
-          value={formData.bio}
-          onChange={handleChange}
-        />
-
-        <input
-          className="form-control mb-3"
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={formData.location}
-          onChange={handleChange}
-        />
-
-        <input
-          className="form-control mb-4"
-          type="text"
-          name="profilePicture"
-          placeholder="Profile Picture URL"
-          value={formData.profilePicture}
-          onChange={handleChange}
-        />
-
-        <button
-          type="submit"
-          className="btn-accent"
-        >
-          Save Profile
-        </button>
-
-      </form>
-
+          <button type="submit" className="btn-accent">
+            Save Profile
+          </button>
+        </form>
+      </div>
     </div>
-
-  </div>
-);
+  );
 }
 
 export default CompleteProfile;

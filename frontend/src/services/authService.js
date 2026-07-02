@@ -11,3 +11,10 @@ export const login = async (userData) => {
   const response = await axios.post(`${API_URL}/login`, userData);
   return response.data;
 };
+
+export const checkEmail = async (email) => {
+  const response = await axios.get(`${API_URL}/check-email`, {
+    params: { email }
+  });
+  return response.data;
+};

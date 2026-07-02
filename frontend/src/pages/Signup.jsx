@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signup } from "../services/authService";
+import { signup, checkEmail } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
@@ -13,7 +13,6 @@ function Signup() {
     confirmPassword: ""
   });
 
-  // Track dynamic field validation errors
   const [errors, setErrors] = useState({
     username: "",
     email: "",
@@ -21,13 +20,11 @@ function Signup() {
     confirmPassword: ""
   });
 
-  // Step 1: Create an alert state for global messages
   const [alert, setAlert] = useState({
     type: "",
     message: "",
   });
 
-  // Field validation rules logic
   const validateField = (name, value, data) => {
     switch (name) {
       case "username":
@@ -73,34 +70,55 @@ function Signup() {
     }
   };
 
-  // Efficient value updating script
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    const updatedData = {
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    };
+    }));
 
-    setFormData(updatedData);
-
-    const newErrors = {
-      ...errors,
-      [name]: validateField(name, value, updatedData),
-    };
-
-    if (name === "password") {
-      newErrors.confirmPassword = validateField(
-        "confirmPassword",
-        updatedData.confirmPassword,
-        updatedData
-      );
-    }
-
-    setErrors(newErrors);
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
-  // Complete block compilation validator
+  const handleBlur = async (e) => {
+    const { name, value } = e.target;
+
+    const currentFieldError = validateField(name, value, formData);
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: currentFieldError,
+    }));
+
+    if (name === "email" && !currentFieldError && value) {
+      try {
+        const result = await checkEmail(value);
+        if (result.exists) {
+          setErrors((prev) => ({
+            ...prev,
+            email: "Email already exists.",
+          }));
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    if (name === "password" && formData.confirmPassword) {
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword: validateField("confirmPassword", formData.confirmPassword, {
+          ...formData,
+          password: value,
+        }),
+      }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -116,11 +134,9 @@ function Signup() {
     return Object.values(newErrors).every((error) => error === "");
   };
 
-  // Form submission handling logic
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Step 4: Reset dynamic application wide notification banners
     setAlert({
       type: "",
       message: "",
@@ -137,21 +153,17 @@ function Signup() {
         password: formData.password,
       });
 
-      // Step 3: Trigger a stateful success banner
       setAlert({
         type: "success",
         message: "Account created successfully!",
       });
 
-      // Forward smoothly to login after letting them read the success message
       setTimeout(() => {
         navigate("/login");
       }, 1500);
 
     } catch (err) {
       const message = err.response?.data?.message || err.message;
-      
-      // Step 3: Trigger an inline structural error alert banner instead of an alert window pop-up
       setAlert({
         type: "danger",
         message: message || "Signup failed.",
@@ -165,30 +177,19 @@ function Signup() {
         <h1 className="logo">ThoughtStream</h1>
         <h3 className="auth-title">Create Account</h3>
 
-        {/* Step 2 & Recommended option: Show the Bootstrap dismissible alert above the form */}
         {alert.message && (
-          <div
-            className={`alert alert-${alert.type} alert-dismissible fade show`}
-            role="alert"
-          >
+          <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert">
             {alert.message}
             <button
               type="button"
               className="btn-close"
               aria-label="Close"
-              onClick={() =>
-                setAlert({
-                  type: "",
-                  message: "",
-                })
-              }
+              onClick={() => setAlert({ type: "", message: "" })}
             ></button>
           </div>
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-
-          {/* Username */}
           <div className="mb-3">
             <input
               className="form-control"
@@ -197,6 +198,8 @@ function Signup() {
               placeholder="Enter Name"
               value={formData.username}
               onChange={handleChange}
+              onBlur={handleBlur}
+              maxLength={30}
               required
             />
             {errors.username && (
@@ -204,7 +207,6 @@ function Signup() {
             )}
           </div>
 
-          {/* Email */}
           <div className="mb-3">
             <input
               className="form-control"
@@ -213,6 +215,7 @@ function Signup() {
               placeholder="Enter Email"
               value={formData.email}
               onChange={handleChange}
+              onBlur={handleBlur}
               required
             />
             {errors.email && (
@@ -220,7 +223,6 @@ function Signup() {
             )}
           </div>
 
-          {/* Password */}
           <div className="mb-3">
             <input
               className="form-control"
@@ -229,21 +231,19 @@ function Signup() {
               placeholder="Enter Password"
               value={formData.password}
               onChange={handleChange}
+              onBlur={handleBlur}
               required
             />
-            
+            {errors.password && (
+              <p className="error-text">{errors.password}</p>
+            )}
             <p className="password-note">
               * Password must contain at least 8 characters, one uppercase
               letter, one lowercase letter, one number and one special
               character.
             </p>
-
-            {errors.password && (
-              <p className="error-text">{errors.password}</p>
-            )}
           </div>
 
-          {/* Confirm Password */}
           <div className="mb-4">
             <input
               className="form-control"
@@ -252,6 +252,7 @@ function Signup() {
               placeholder="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
+              onBlur={handleBlur}
               required
             />
             {errors.confirmPassword && (
