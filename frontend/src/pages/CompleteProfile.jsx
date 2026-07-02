@@ -11,7 +11,6 @@ function CompleteProfile() {
     profilePicture: ""
   });
 
-  // alert banners
   const [alert, setAlert] = useState({
     type: "",
     message: "",
@@ -27,7 +26,6 @@ function CompleteProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // clear any previous banner before running a new request
     setAlert({
       type: "",
       message: "",
@@ -36,14 +34,13 @@ function CompleteProfile() {
     try {
       await updateProfile(formData);
 
-      // success banner 
       setAlert({
         type: "success",
         message: "Profile updated successfully!",
       });
 
       setTimeout(() => {
-        navigate("/home");
+        navigate("/dashboard");
       }, 1500);
 
     } catch (error) {
@@ -62,7 +59,6 @@ function CompleteProfile() {
         <h1 className="logo">ThoughtStream</h1>
         <h3 className="auth-title">Complete Your Profile</h3>
 
-        {/* Dynamic Bootstrap Alert Banner */}
         {alert.message && (
           <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert">
             {alert.message}
