@@ -1,49 +1,58 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 function Sidebar() {
   return (
     <div className="sidebar">
-
       <div className="sidebar-logo">
         ThoughtStream
       </div>
 
       <ul className="sidebar-menu">
-
-        <li className="active">
-          <Link to="/dashboard">
+        <li>
+          <NavLink 
+            to="/dashboard" 
+            className={({ isActive }) => isActive ? "active" : ""}
+          >
             <i className="bi bi-house-door-fill me-2"></i>
             Home
-          </Link>
+          </NavLink>
         </li>
 
         <li>
-          <Link to="/requests">
+          <NavLink 
+            to="/requests" 
+            className={({ isActive }) => isActive ? "active" : ""}
+          >
             <i className="bi bi-person-plus-fill me-2"></i>
             Requests
-          </Link>
+          </NavLink>
         </li>
 
         <li>
-          <Link to="/friends">
+          <NavLink 
+            to="/friends" 
+            className={({ isActive }) => isActive ? "active" : ""}
+          >
             <i className="bi bi-people-fill me-2"></i>
             Friends
-          </Link>
+          </NavLink>
         </li>
 
         <li>
-          <Link to="/profile">
+          <NavLink 
+            to="/profile" 
+            className={({ isActive }) => isActive ? "active" : ""}
+          >
             <i className="bi bi-person-circle me-2"></i>
             Profile
-          </Link>
+          </NavLink>
         </li>
-
       </ul>
 
       <button className="btn btn-danger logout-btn">
+        <i className="bi bi-box-arrow-right me-2"></i>
         Logout
       </button>
-
     </div>
   );
 }

@@ -8,6 +8,8 @@ const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const protect = require("./middleware/authMiddleware");
 
+const userRoutes = require("./routes/userRoutes.js");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -16,8 +18,11 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+
+// Main App API Routing Tables
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({
@@ -38,17 +43,14 @@ app.get("/users", async (req, res) => {
     }
 });
 
-// GET by _id route
 app.get("/users/:id", async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
-
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
-
         res.json(user);
     }
     catch (error) {
@@ -58,7 +60,6 @@ app.get("/users/:id", async (req, res) => {
     }
 });
 
-// PUT route
 app.put("/users/:id", async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(
@@ -69,13 +70,11 @@ app.put("/users/:id", async (req, res) => {
                 runValidators: true
             }
         );
-
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
-
         res.json(user);
     }
     catch (error) {
@@ -85,21 +84,16 @@ app.put("/users/:id", async (req, res) => {
     }
 });
 
-//DELETE route
 app.delete("/users/:id", async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(
-            req.params.id
-        );
-
+        const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
-
         res.json({
-            message:"User deleted successfully"
+            message: "User deleted successfully"
         });
     }
     catch (error) {
