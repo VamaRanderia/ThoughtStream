@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signup, checkEmail } from "../services/authService";
+import { signup, checkEmail, checkUsername } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
@@ -93,6 +93,20 @@ function Signup() {
       ...prev,
       [name]: currentFieldError,
     }));
+
+    if (name === "username" && !currentFieldError && value) {
+      try {
+        const result = await checkUsername(value);
+        if (result.exists) {
+          setErrors((prev) => ({
+            ...prev,
+            username: "Username already exists.",
+          }));
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
 
     if (name === "email" && !currentFieldError && value) {
       try {

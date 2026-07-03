@@ -18,3 +18,10 @@ export const checkEmail = async (email) => {
   });
   return response.data;
 };
+
+export const checkUsername = async (username) => {
+  const response = await axios.get(`${API_URL}/check-username`, {
+    params: { username }
+  });
+  return response.data;
+};

@@ -3,11 +3,13 @@ require("dotenv").config({ quiet: true });
 const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
+
 const User = require("./models/User");
+const FriendRequest = require("./models/FriendRequest");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const protect = require("./middleware/authMiddleware");
-
+const requestRoutes = require("./routes/requestRoutes");
 const userRoutes = require("./routes/userRoutes.js");
 
 const app = express();
@@ -19,10 +21,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Main App API Routing Tables
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/requests", requestRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({
@@ -31,10 +33,36 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-app.get("/users", async (req, res) => {
+app.get("/users", protect, async (req, res) => {
     try {
-        const users = await User.find();
-        res.json(users);
+        const loggedInUserId = req.user.id;
+        const users = await User.find({ _id: { $ne: loggedInUserId } });
+
+        const requests = await FriendRequest.find({
+            $or: [{ sender: loggedInUserId }, { receiver: loggedInUserId }]
+        });
+
+        const usersWithStatus = users.map(user => {
+            const userObj = user.toObject();
+            const relation = requests.find(r => 
+                (r.sender.toString() === loggedInUserId && r.receiver.toString() === user._id.toString()) ||
+                (r.receiver.toString() === loggedInUserId && r.sender.toString() === user._id.toString())
+            );
+
+            if (!relation) {
+                userObj.status = "send";
+            } else if (relation.status === "accepted") {
+                userObj.status = "friend";
+            } else if (relation.status === "pending" && relation.sender.toString() === loggedInUserId) {
+                userObj.status = "sent";
+            } else {
+                userObj.status = "send";
+            }
+
+            return userObj;
+        });
+
+        res.json(usersWithStatus);
     }
     catch (error) {
         res.status(500).json({

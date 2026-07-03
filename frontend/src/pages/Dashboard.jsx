@@ -11,7 +11,7 @@ function Dashboard() {
         <div className="dashboard-header">
 
           <div>
-            <h2>Welcome back 👋</h2>
+            <h2>Welcome back,👋</h2>
 
             <p className="text-secondary">
               Share your thoughts. Build meaningful connections.

@@ -73,7 +73,7 @@ function Login(){
 
       setTimeout(() => {
         if (data.user?.isProfileComplete) {
-          navigate("/home");
+          navigate("/Dashboard");
         } else {
           navigate("/complete-profile");
         }

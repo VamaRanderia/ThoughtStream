@@ -118,6 +118,7 @@ const loginUser = async (req, res) => {
         });
     }
 };
+
 const checkEmailAvailability = async (req, res) => {
     try {
         const { email } = req.query;
@@ -140,8 +141,31 @@ const checkEmailAvailability = async (req, res) => {
     }
 };
 
+const checkUsernameAvailability = async (req, res) => {
+    try {
+        const { username } = req.query;
+
+        if (!username) {
+            return res.status(400).json({
+                message: "Username parameter is required"
+            });
+        }
+
+        const user = await User.findOne({ username: username.trim() });
+
+        res.status(200).json({
+            exists: !!user
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     checkEmailAvailability,
+    checkUsernameAvailability
 };

@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { getUsers } from "../services/userService";
+import { getReceivedRequests, sendRequest, rejectRequest } from "../services/requestService";
 
 function Requests() {
-  const requests = [
-    
-  ];
-
-  // real backend users state
+  const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     fetchUsers();
+    fetchRequests();
   }, []);
 
   const fetchUsers = async () => {
@@ -20,6 +18,56 @@ function Requests() {
       setUsers(data);
     } catch (error) {
       console.log("Error fetching users:", error);
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const data = await getReceivedRequests();
+      setRequests(data);
+    } catch (error) {
+      console.log("Error fetching requests:", error);
+    }
+  };
+
+  const handleSendRequest = async (receiverId) => {
+    try {
+      await sendRequest(receiverId);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          (user._id || user.id) === receiverId? { ...user, status: "sent" }: user));
+    } catch (error) {
+      console.log("Error sending request:", error);
+    }
+  };
+
+  const handleReject = async (requestId, senderId) => {
+    try {
+      await rejectRequest(requestId);
+      
+      const senderUsername = requests.find((r) => (r._id || r.id) === requestId)?.sender?.username || "User";
+
+      setRequests((prev) =>
+        prev.filter((req) => (req._id || req.id) !== requestId)
+      );
+
+      setUsers((prev) => {
+        const exists = prev.some((user) => (user._id || user.id) === senderId);
+        if (exists) {
+          return prev.map((user) =>
+            (user._id || user.id) === senderId? { ...user, status: "send" }: user);
+        }
+        return [
+          ...prev,
+          {
+            _id: senderId,
+            username: senderUsername,
+            status: "send"
+          }
+        ];
+      });
+    } catch (error) {
+      console.log("Error rejecting request:", error);
     }
   };
 
@@ -37,7 +85,6 @@ function Requests() {
           </div>
         </div>
 
-        {/* Friend Requests */}
         <div className="dashboard-card mb-4">
           <h4 className="mb-4">Received Requests</h4>
           <table className="table table-dark table-borderless align-middle">
@@ -49,11 +96,18 @@ function Requests() {
             </thead>
             <tbody>
               {requests.map((request) => (
-                <tr key={request.id}>
-                  <td>{request.username}</td>
+                <tr key={request._id || request.id}>
+                  <td>{request.sender?.username}</td>
                   <td>
-                    <button className="btn btn-success btn-sm me-2">Accept</button>
-                    <button className="btn btn-danger btn-sm">Reject</button>
+                    <button className="btn btn-primary btn-sm me-2">
+                      Accept
+                    </button>
+                    <button 
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleReject(request._id || request.id, request.sender?._id)}
+                    >
+                      Reject
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -61,7 +115,6 @@ function Requests() {
           </table>
         </div>
 
-        {/* Users */}
         <div className="dashboard-card">
           <h4 className="mb-4">All Users</h4>
           <table className="table table-dark table-borderless align-middle">
@@ -72,23 +125,26 @@ function Requests() {
               </tr>
             </thead>
             <tbody>
-              {users.map((users) => (
-                <tr key={users._id || users.id}>
-                  <td>{users.username}</td>
+              {users.map((user) => (
+                <tr key={user._id || user.id}>
+                  <td>{user.username}</td>
                   <td>
-                    {(!users.status || users.status === "send") && (
-                      <button className="btn btn-info btn-sm">
+                    {(!user.status || user.status === "send") && (
+                      <button 
+                        className="btn btn-info btn-sm"
+                        onClick={() => handleSendRequest(user._id || user.id)}
+                      >
                         Send Request
                       </button>
                     )}
 
-                    {users.status === "sent" && (
+                    {user.status === "sent" && (
                       <button className="btn btn-secondary btn-sm" disabled>
                         Request Sent
                       </button>
                     )}
 
-                    {users.status === "friend" && (
+                    {user.status === "friend" && (
                       <button className="btn btn-success btn-sm" disabled>
                         Friends
                       </button>
