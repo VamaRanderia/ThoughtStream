@@ -119,6 +119,31 @@ const loginUser = async (req, res) => {
     }
 };
 
+const getCurrentUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("username email isProfileComplete");
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid session"
+            });
+        }
+
+        res.status(200).json({
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                isProfileComplete: user.isProfileComplete
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
 const checkEmailAvailability = async (req, res) => {
     try {
         const { email } = req.query;
@@ -166,6 +191,7 @@ const checkUsernameAvailability = async (req, res) => {
 module.exports = {
     registerUser,
     loginUser,
+    getCurrentUser,
     checkEmailAvailability,
     checkUsernameAvailability
 };

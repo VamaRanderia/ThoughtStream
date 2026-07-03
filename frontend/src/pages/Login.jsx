@@ -65,6 +65,7 @@ function Login(){
     try {
       const data = await login(formData);
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       setAlert({
         type: "success",
@@ -73,7 +74,7 @@ function Login(){
 
       setTimeout(() => {
         if (data.user?.isProfileComplete) {
-          navigate("/Dashboard");
+          navigate("/dashboard");
         } else {
           navigate("/complete-profile");
         }
