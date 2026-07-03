@@ -1,16 +1,7 @@
-import axios from "axios";
-
-const API = "http://localhost:5000/api/users";
+import api from "./api";
 
 export const getUsers = async () => {
-
-    const token = localStorage.getItem("token");
-
-    const response = await axios.get(API, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await api.get("/api/users");
 
     return response.data;
 };

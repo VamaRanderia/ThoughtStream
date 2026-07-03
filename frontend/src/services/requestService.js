@@ -1,44 +1,26 @@
-import axios from "axios";
+import api from "./api";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
-const API = `${API_URL}/api/requests`;
+const API = "/api/requests";
 
 export const getReceivedRequests = async () => {
-    const token = localStorage.getItem("token");
-    const response = await axios.get(
-        `${API}/received`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    );
+    const response = await api.get(`${API}/received`);
     return response.data;
 };
 
 export const sendRequest = async (receiverId) => {
-    const token = localStorage.getItem("token");
-    const response = await axios.post(
+    const response = await api.post(
         `${API}/send/${receiverId}`,
-        {},
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
+        {}
     );
     return response.data;
 };
 
+export const acceptRequest = async (id) => {
+    const response = await api.patch(`${API}/${id}/accept`);
+    return response.data;
+};
+
 export const rejectRequest = async (id) => {
-    const token = localStorage.getItem("token");
-    const response = await axios.delete(
-        `${API}/${id}/reject`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    );
+    const response = await api.delete(`${API}/${id}/reject`);
     return response.data;
 };

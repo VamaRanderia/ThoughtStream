@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { getUsers } from "../services/userService";
-import { getReceivedRequests, sendRequest, rejectRequest } from "../services/requestService";
+import { acceptRequest, getReceivedRequests, sendRequest, rejectRequest } from "../services/requestService";
 
 function Requests() {
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
+  const friends = users.filter((user) => user.status === "friend");
 
   useEffect(() => {
     fetchUsers();
@@ -71,6 +72,38 @@ function Requests() {
     }
   };
 
+  const handleAccept = async (requestId, senderId) => {
+    try {
+      await acceptRequest(requestId);
+
+      const senderUsername = requests.find((r) => (r._id || r.id) === requestId)?.sender?.username || "User";
+
+      setRequests((prev) =>
+        prev.filter((req) => (req._id || req.id) !== requestId)
+      );
+
+      setUsers((prev) => {
+        const exists = prev.some((user) => (user._id || user.id) === senderId);
+        if (exists) {
+          return prev.map((user) =>
+            (user._id || user.id) === senderId ? { ...user, status: "friend" } : user
+          );
+        }
+
+        return [
+          ...prev,
+          {
+            _id: senderId,
+            username: senderUsername,
+            status: "friend"
+          }
+        ];
+      });
+    } catch (error) {
+      console.log("Error accepting request:", error);
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -99,7 +132,10 @@ function Requests() {
                 <tr key={request._id || request.id}>
                   <td>{request.sender?.username}</td>
                   <td>
-                    <button className="btn btn-primary btn-sm me-2">
+                    <button
+                      className="btn btn-primary btn-sm me-2"
+                      onClick={() => handleAccept(request._id || request.id, request.sender?._id)}
+                    >
                       Accept
                     </button>
                     <button 
@@ -111,6 +147,29 @@ function Requests() {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="dashboard-card mb-4">
+          <h4 className="mb-4">Friends</h4>
+          <table className="table table-dark table-borderless align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {friends.map((friend) => (
+                <tr key={friend._id || friend.id}>
+                  <td>{friend.username}</td>
+                </tr>
+              ))}
+              {friends.length === 0 && (
+                <tr>
+                  <td className="text-secondary">No friends yet.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -141,6 +200,12 @@ function Requests() {
                     {user.status === "sent" && (
                       <button className="btn btn-secondary btn-sm" disabled>
                         Request Sent
+                      </button>
+                    )}
+
+                    {user.status === "received" && (
+                      <button className="btn btn-warning btn-sm" disabled>
+                        Respond Above
                       </button>
                     )}
 
