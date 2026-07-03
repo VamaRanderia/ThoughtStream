@@ -32,10 +32,8 @@ function ProtectedRoute() {
 
     validateSession();
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => {isMounted = false;};
+  }, []); 
 
   if (isValidSession === null) {
     return null;

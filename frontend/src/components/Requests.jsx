@@ -6,7 +6,6 @@ import { acceptRequest, getReceivedRequests, sendRequest, rejectRequest } from "
 function Requests() {
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
-  const friends = users.filter((user) => user.status === "friend");
   const availableUsers = users.filter(
     (user) => user.status !== "received" && user.status !== "friend"
   );
@@ -150,29 +149,6 @@ function Requests() {
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="dashboard-card mb-4">
-          <h4 className="mb-4">Friends</h4>
-          <table className="table table-dark table-borderless align-middle">
-            <thead>
-              <tr>
-                <th>Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              {friends.map((friend) => (
-                <tr key={friend._id || friend.id}>
-                  <td>{friend.username}</td>
-                </tr>
-              ))}
-              {friends.length === 0 && (
-                <tr>
-                  <td className="text-secondary">No friends yet.</td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
