@@ -7,6 +7,9 @@ function Requests() {
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
   const friends = users.filter((user) => user.status === "friend");
+  const availableUsers = users.filter(
+    (user) => user.status !== "received" && user.status !== "friend"
+  );
 
   useEffect(() => {
     fetchUsers();
@@ -184,7 +187,7 @@ function Requests() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {availableUsers.map((user) => (
                 <tr key={user._id || user.id}>
                   <td>{user.username}</td>
                   <td>
@@ -203,20 +206,14 @@ function Requests() {
                       </button>
                     )}
 
-                    {user.status === "received" && (
-                      <button className="btn btn-warning btn-sm" disabled>
-                        Respond Above
-                      </button>
-                    )}
-
-                    {user.status === "friend" && (
-                      <button className="btn btn-success btn-sm" disabled>
-                        Friends
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))}
+              {availableUsers.length === 0 && (
+                <tr>
+                  <td className="text-secondary" colSpan="2">No users available.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
