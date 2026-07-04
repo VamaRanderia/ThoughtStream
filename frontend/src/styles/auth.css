@@ -418,3 +418,154 @@
 .btn-info:hover {
     background: var(--accent-hover);
 }
+
+/* ===========================
+   Feed
+=========================== */
+
+.feed-list {
+    width: min(760px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.post-card,
+.feed-state {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+}
+
+.post-card {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 14px;
+    padding: 18px;
+    text-align: left;
+}
+
+.post-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: #24363a;
+    color: var(--accent-hover);
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.post-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-body {
+    min-width: 0;
+}
+
+.post-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.post-author-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+}
+
+.post-username {
+    color: var(--text-primary);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.post-date {
+    color: var(--text-secondary);
+    font-size: .85rem;
+}
+
+.post-content {
+    color: var(--text-primary);
+    margin: 10px 0 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.post-like-btn,
+.post-delete-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    line-height: 1;
+}
+
+.post-like-btn.liked {
+    color: #ff4d6d;
+    border-color: rgba(255, 77, 109, .45);
+}
+
+.post-like-btn:disabled,
+.post-delete-btn:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+.post-delete-btn {
+    color: #ff8a8a;
+}
+
+.post-like-count {
+    min-width: 1ch;
+    font-size: .95rem;
+}
+
+.feed-state {
+    width: min(760px, 100%);
+    padding: 26px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.feed-error {
+    color: #ff8a8a;
+}
+
+@media (max-width: 700px) {
+    .dashboard-content {
+        padding: 24px;
+    }
+
+    .post-card {
+        grid-template-columns: 42px 1fr;
+        padding: 14px;
+    }
+
+    .post-avatar {
+        width: 42px;
+        height: 42px;
+    }
+}

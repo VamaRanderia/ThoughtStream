@@ -1,4 +1,5 @@
 import Sidebar from "../components/Sidebar";
+import Feed from "../components/Feed";
 
 function Dashboard() {
   return (
@@ -11,7 +12,7 @@ function Dashboard() {
         <div className="dashboard-header">
 
           <div>
-            <h2>Welcome back,👋</h2>
+            <h2>Home</h2>
 
             <p className="text-secondary">
               Share your thoughts. Build meaningful connections.
@@ -20,17 +21,7 @@ function Dashboard() {
 
         </div>
 
-        <div className="home-card">
-
-          <p className="home-text">
-            Feed will appear here.
-          </p>
-
-          <p className="text-secondary">
-            Posts, comments and interactions will be added in future phases.
-          </p>
-
-        </div>
+        <Feed />
 
       </div>
 
