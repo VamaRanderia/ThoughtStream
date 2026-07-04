@@ -4,6 +4,7 @@ const router = express.Router();
 const {
     registerUser,
     loginUser,
+    logoutUser,
     getCurrentUser,
     checkEmailAvailability,
     checkUsernameAvailability
@@ -12,6 +13,7 @@ const protect = require("../middleware/authMiddleware");
 
 router.post("/signup", registerUser);
 router.post("/login", loginUser);
+router.post("/logout", logoutUser);
 router.get("/me", protect, getCurrentUser);
 router.get("/check-email", checkEmailAvailability);
 router.get("/check-username", checkUsernameAvailability);

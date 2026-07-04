@@ -12,6 +12,17 @@ const generateToken = (id) => {
     );
 };
 
+const cookieOptions = () => ({
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+});
+
+const sendAuthCookie = (res, token) => {
+    res.cookie("token", token, cookieOptions());
+};
+
 const registerUser = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -47,6 +58,7 @@ const registerUser = async (req, res) => {
         });
 
         const token = generateToken(user._id);
+        sendAuthCookie(res, token);
 
         res.status(201).json({
             message: "User registered successfully",
@@ -101,6 +113,7 @@ const loginUser = async (req, res) => {
         }
 
         const token = generateToken(user._id);
+        sendAuthCookie(res, token);
 
         res.status(200).json({
             message: "Login successful",
@@ -117,6 +130,18 @@ const loginUser = async (req, res) => {
             message: error.message
         });
     }
+};
+
+const logoutUser = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production"
+    });
+
+    res.status(200).json({
+        message: "Logout successful"
+    });
 };
 
 const getCurrentUser = async (req, res) => {
@@ -191,6 +216,7 @@ const checkUsernameAvailability = async (req, res) => {
 module.exports = {
     registerUser,
     loginUser,
+    logoutUser,
     getCurrentUser,
     checkEmailAvailability,
     checkUsernameAvailability
