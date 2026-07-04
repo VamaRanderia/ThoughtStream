@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const User = require("./models/User");
 const FriendRequest = require("./models/FriendRequest");
 const authRoutes = require("./routes/authRoutes");
+const postRoutes = require("./routes/postRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const protect = require("./middleware/authMiddleware");
 const requestRoutes = require("./routes/requestRoutes");
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/requests", requestRoutes);
