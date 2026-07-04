@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import { getCurrentUser } from "../services/authService";
 import { getPosts } from "../services/postService";
@@ -8,6 +9,10 @@ function Feed() {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handlePostCreated = (post) => {
+    setPosts((prevPosts) => [post, ...prevPosts]);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -44,38 +49,50 @@ function Feed() {
 
   if (isLoading) {
     return (
-      <div className="feed-state">
-        Loading feed...
-      </div>
+      <>
+        <CreatePost onPostCreated={handlePostCreated} />
+        <div className="feed-state">
+          Loading feed...
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="feed-state feed-error">
-        {error}
-      </div>
+      <>
+        <CreatePost onPostCreated={handlePostCreated} />
+        <div className="feed-state feed-error">
+          {error}
+        </div>
+      </>
     );
   }
 
   if (posts.length === 0) {
     return (
-      <div className="feed-state">
-        No posts yet.
-      </div>
+      <>
+        <CreatePost onPostCreated={handlePostCreated} />
+        <div className="feed-state">
+          No posts yet.
+        </div>
+      </>
     );
   }
 
   return (
-    <section className="feed-list" aria-label="Global feed">
-      {posts.map((post) => (
-        <PostCard
-          key={post._id || post.id}
-          post={post}
-          currentUserId={currentUserId}
-        />
-      ))}
-    </section>
+    <>
+      <CreatePost onPostCreated={handlePostCreated} />
+      <section className="feed-list" aria-label="Global feed">
+        {posts.map((post) => (
+          <PostCard
+            key={post._id || post.id}
+            post={post}
+            currentUserId={currentUserId}
+          />
+        ))}
+      </section>
+    </>
   );
 }
 

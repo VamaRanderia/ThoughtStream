@@ -423,6 +423,79 @@
    Feed
 =========================== */
 
+.create-post {
+    width: min(760px, 100%);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+}
+
+.create-post-input {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    background: #2A2A2A;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 14px;
+    line-height: 1.45;
+}
+
+.create-post-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.create-post-input:focus {
+    border-color: var(--accent);
+}
+
+.create-post-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.create-post-counter {
+    color: var(--text-secondary);
+    font-size: .85rem;
+}
+
+.create-post-error {
+    color: #ff8a8a;
+    font-size: .85rem;
+    margin-top: 4px;
+}
+
+.create-post-submit-wrap {
+    display: inline-flex;
+}
+
+.create-post-submit {
+    min-width: 96px;
+    min-height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    padding: 8px 18px;
+}
+
+.create-post-submit:hover:not(:disabled) {
+    background: var(--accent-hover);
+}
+
+.create-post-submit:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
 .feed-list {
     width: min(760px, 100%);
     display: flex;
@@ -567,5 +640,17 @@
     .post-avatar {
         width: 42px;
         height: 42px;
+    }
+
+    .create-post-footer {
+        flex-direction: column;
+    }
+
+    .create-post-submit {
+        width: 100%;
+    }
+
+    .create-post-submit-wrap {
+        width: 100%;
     }
 }
