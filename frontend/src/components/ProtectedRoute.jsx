@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { getCurrentUser } from "../services/authService";
-import { isAuthenticated } from "../services/api";
 
 function ProtectedRoute() {
   const location = useLocation();
@@ -11,14 +10,8 @@ function ProtectedRoute() {
     let isMounted = true;
 
     const validateSession = async () => {
-      if (!isAuthenticated()) {
-        setIsValidSession(false);
-        return;
-      }
-
       try {
-        const data = await getCurrentUser();
-        localStorage.setItem("user", JSON.stringify(data.user));
+        await getCurrentUser();
 
         if (isMounted) {
           setIsValidSession(true);

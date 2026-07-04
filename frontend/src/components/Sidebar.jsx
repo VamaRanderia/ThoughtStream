@@ -8,8 +8,6 @@ function Sidebar() {
     try {
       await logout();
     } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
       navigate("/login", { replace: true });
     }
   };
