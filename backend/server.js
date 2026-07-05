@@ -155,3 +155,24 @@ mongoose.connect(process.env.MONGO_URI, {
         console.error("MongoDB connection failed:", err.message);
         process.exit(1);
     });
+
+    mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+
+    const server = app.listen(PORT, "127.0.0.1", () => {
+      console.log("Listening on", server.address());
+    });
+
+    server.on("error", (err) => {
+      console.error("Listen error:", err);
+    });
+
+    server.on("close", () => {
+      console.log("Server closed");
+    });
+  })
+  .catch((err) => {
+    console.error(err);
+  });
+  

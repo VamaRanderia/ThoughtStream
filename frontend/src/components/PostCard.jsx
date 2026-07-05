@@ -1,4 +1,4 @@
-function PostCard({ post, currentUserId }) {
+function PostCard({ post, currentUserId, onDeletePost, isDeleting }) {
   const author = post.author || {};
   const authorId = author._id || author.id;
   const isAuthor = authorId === currentUserId;
@@ -42,7 +42,8 @@ function PostCard({ post, currentUserId }) {
             <button
               className="post-delete-btn"
               type="button"
-              disabled
+              onClick={() => onDeletePost(post._id || post.id)}
+              disabled={isDeleting}
               aria-label="Delete post"
             >
               <i className="bi bi-trash"></i>

@@ -503,6 +503,18 @@
     gap: 16px;
 }
 
+.feed-inline-error {
+    width: min(760px, 100%);
+    color: #ff8a8a;
+    background: rgba(255, 138, 138, .08);
+    border: 1px solid rgba(255, 138, 138, .22);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    text-align: left;
+    font-size: .9rem;
+}
+
 .post-card,
 .feed-state {
     background: var(--bg-secondary);
@@ -601,19 +613,50 @@
     border-color: rgba(255, 77, 109, .45);
 }
 
-.post-like-btn:disabled,
 .post-delete-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+.post-like-btn:disabled {
     opacity: 1;
     cursor: default;
 }
 
 .post-delete-btn {
     color: #ff8a8a;
+    transition: background .2s, border-color .2s;
+}
+
+.post-delete-btn:hover:not(:disabled) {
+    background: rgba(255, 138, 138, .08);
+    border-color: rgba(255, 138, 138, .35);
 }
 
 .post-like-count {
     min-width: 1ch;
     font-size: .95rem;
+}
+
+.delete-post-modal {
+    display: block;
+}
+
+.delete-post-modal-content {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, .45);
+}
+
+.delete-post-modal .modal-header,
+.delete-post-modal .modal-footer {
+    border-color: var(--border);
+}
+
+.delete-post-modal .modal-body {
+    color: var(--text-secondary);
 }
 
 .feed-state {

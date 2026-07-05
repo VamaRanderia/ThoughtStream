@@ -11,3 +11,8 @@ export const createPost = async (postData) => {
   const response = await api.post(API_URL, postData);
   return response.data;
 };
+
+export const deletePost = async (postId) => {
+  const response = await api.delete(`${API_URL}/${postId}`);
+  return response.data;
+};

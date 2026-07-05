@@ -2,16 +2,55 @@ import { useEffect, useState } from "react";
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import { getCurrentUser } from "../services/authService";
-import { getPosts } from "../services/postService";
+import { deletePost, getPosts } from "../services/postService";
 
 function Feed() {
   const [posts, setPosts] = useState([]);
   const [currentUserId, setCurrentUserId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deletingPostId, setDeletingPostId] = useState("");
+  const [postPendingDelete, setPostPendingDelete] = useState(null);
 
   const handlePostCreated = (post) => {
     setPosts((prevPosts) => [post, ...prevPosts]);
+    setDeleteError("");
+  };
+
+  const handleDeletePost = (postId) => {
+    const post = posts.find((item) => (item._id || item.id) === postId);
+    setPostPendingDelete(post || { _id: postId });
+    setDeleteError("");
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (!deletingPostId) {
+      setPostPendingDelete(null);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    const postId = postPendingDelete?._id || postPendingDelete?.id;
+
+    if (!postId) {
+      return;
+    }
+
+    setDeletingPostId(postId);
+    setDeleteError("");
+
+    try {
+      await deletePost(postId);
+      setPosts((prevPosts) =>
+        prevPosts.filter((post) => (post._id || post.id) !== postId)
+      );
+      setPostPendingDelete(null);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || "Unable to delete post.");
+    } finally {
+      setDeletingPostId("");
+    }
   };
 
   useEffect(() => {
@@ -83,15 +122,76 @@ function Feed() {
   return (
     <>
       <CreatePost onPostCreated={handlePostCreated} />
+      {deleteError && (
+        <div className="feed-inline-error">{deleteError}</div>
+      )}
       <section className="feed-list" aria-label="Global feed">
         {posts.map((post) => (
           <PostCard
             key={post._id || post.id}
             post={post}
             currentUserId={currentUserId}
+            onDeletePost={handleDeletePost}
+            isDeleting={deletingPostId === (post._id || post.id)}
           />
         ))}
       </section>
+
+      {postPendingDelete && (
+        <>
+          <div
+            className="modal fade show delete-post-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-post-modal-title"
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content delete-post-modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="delete-post-modal-title">
+                    Delete post
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    aria-label="Close"
+                    onClick={handleCloseDeleteModal}
+                    disabled={Boolean(deletingPostId)}
+                  ></button>
+                </div>
+
+                <div className="modal-body">
+                  Are you sure you want to delete this post?
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleCloseDeleteModal}
+                    disabled={Boolean(deletingPostId)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleConfirmDelete}
+                    disabled={Boolean(deletingPostId)}
+                  >
+                    {deletingPostId ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop fade show"
+            onClick={handleCloseDeleteModal}
+          ></div>
+        </>
+      )}
     </>
   );
 }
