@@ -1,3 +1,5 @@
+import { FaHeart, FaRegHeart, FaTrash } from "react-icons/fa";
+
 function PostCard({ post, currentUserId, onDeletePost, isDeleting, onToggleLike }) {
   const author = post.author || {};
   const authorId = author._id || author.id;
@@ -46,7 +48,7 @@ function PostCard({ post, currentUserId, onDeletePost, isDeleting, onToggleLike 
               disabled={isDeleting}
               aria-label="Delete post"
             >
-              <i className="bi bi-trash"></i>
+              <FaTrash />
             </button>
           )}
         </div>
@@ -60,7 +62,7 @@ function PostCard({ post, currentUserId, onDeletePost, isDeleting, onToggleLike 
             onClick={() => onToggleLike && onToggleLike(post._id || post.id)}
             aria-label={isLiked ? "Unlike post" : "Like post"}
           >
-            <i className={`bi ${isLiked ? "bi-heart-fill" : "bi-heart"}`}></i>
+            {isLiked ? <FaHeart /> : <FaRegHeart />}
           </button>
           <span className="post-like-count">{likes.length}</span>
         </div>
