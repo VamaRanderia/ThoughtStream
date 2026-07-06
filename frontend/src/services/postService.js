@@ -16,3 +16,8 @@ export const deletePost = async (postId) => {
   const response = await api.delete(`${API_URL}/${postId}`);
   return response.data;
 };
+
+export const toggleLikePost = async (postId) => {
+  const response = await api.post(`${API_URL}/${postId}/like`);
+  return response.data;
+};

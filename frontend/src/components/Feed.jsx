@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import { getCurrentUser } from "../services/authService";
-import { deletePost, getPosts } from "../services/postService";
+import { deletePost, getPosts, toggleLikePost } from "../services/postService";
 
 function Feed() {
   const [posts, setPosts] = useState([]);
@@ -50,6 +50,60 @@ function Feed() {
       setDeleteError(err.response?.data?.message || "Unable to delete post.");
     } finally {
       setDeletingPostId("");
+    }
+  };
+
+  const handleToggleLike = async (postId) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => {
+        if ((post._id || post.id) === postId) {
+          const likes = Array.isArray(post.likes) ? post.likes : [];
+          const isAlreadyLiked = likes.some((like) => {
+            const likeId = typeof like === "string" ? like : like?._id || like?.id;
+            return likeId === currentUserId;
+          });
+
+          const newLikes = isAlreadyLiked
+            ? likes.filter((like) => (typeof like === "string" ? like : like?._id || like?.id) !== currentUserId)
+            : [...likes, currentUserId];
+
+          return { ...post, likes: newLikes };
+        }
+        return post;
+      })
+    );
+
+    try {
+      const data = await toggleLikePost(postId);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
+          if ((post._id || post.id) === postId) {
+            return { ...post, likes: data.likes };
+          }
+          return post;
+        })
+      );
+    } catch (err) {
+      console.error("Failed to toggle like:", err);
+      // Revert optimistic update (apply opposite toggle)
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
+          if ((post._id || post.id) === postId) {
+            const likes = Array.isArray(post.likes) ? post.likes : [];
+            const isAlreadyLiked = likes.some((like) => {
+              const likeId = typeof like === "string" ? like : like?._id || like?.id;
+              return likeId === currentUserId;
+            });
+
+            const newLikes = isAlreadyLiked
+              ? likes.filter((like) => (typeof like === "string" ? like : like?._id || like?.id) !== currentUserId)
+              : [...likes, currentUserId];
+
+            return { ...post, likes: newLikes };
+          }
+          return post;
+        })
+      );
     }
   };
 
@@ -133,6 +187,7 @@ function Feed() {
             currentUserId={currentUserId}
             onDeletePost={handleDeletePost}
             isDeleting={deletingPostId === (post._id || post.id)}
+            onToggleLike={handleToggleLike}
           />
         ))}
       </section>

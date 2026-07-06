@@ -608,6 +608,21 @@
     line-height: 1;
 }
 
+.post-like-btn {
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.post-like-btn:hover:not(:disabled) {
+    background: rgba(255, 77, 109, 0.08);
+    border-color: rgba(255, 77, 109, 0.35);
+    color: #ff4d6d;
+}
+
+.post-like-btn:active:not(:disabled) {
+    transform: scale(0.92);
+}
+
 .post-like-btn.liked {
     color: #ff4d6d;
     border-color: rgba(255, 77, 109, .45);

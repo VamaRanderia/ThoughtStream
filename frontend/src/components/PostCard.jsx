@@ -1,4 +1,4 @@
-function PostCard({ post, currentUserId, onDeletePost, isDeleting }) {
+function PostCard({ post, currentUserId, onDeletePost, isDeleting, onToggleLike }) {
   const author = post.author || {};
   const authorId = author._id || author.id;
   const isAuthor = authorId === currentUserId;
@@ -57,8 +57,8 @@ function PostCard({ post, currentUserId, onDeletePost, isDeleting }) {
           <button
             className={`post-like-btn ${isLiked ? "liked" : ""}`}
             type="button"
-            disabled
-            aria-label="Like post"
+            onClick={() => onToggleLike && onToggleLike(post._id || post.id)}
+            aria-label={isLiked ? "Unlike post" : "Like post"}
           >
             <i className={`bi ${isLiked ? "bi-heart-fill" : "bi-heart"}`}></i>
           </button>
