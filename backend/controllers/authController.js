@@ -144,7 +144,7 @@ const logoutUser = (req, res) => {
 
 const getCurrentUser = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select("username email isProfileComplete");
+        const user = await User.findById(req.user.id).select("username email isProfileComplete bio location profilePicture createdAt");
 
         if (!user) {
             return res.status(401).json({
@@ -157,7 +157,11 @@ const getCurrentUser = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                isProfileComplete: user.isProfileComplete
+                isProfileComplete: user.isProfileComplete,
+                bio: user.bio,
+                location: user.location,
+                profilePicture: user.profilePicture,
+                createdAt: user.createdAt
             }
         });
     } catch (error) {

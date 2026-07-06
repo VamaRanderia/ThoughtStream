@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import CompleteProfile from "./pages/CompleteProfile";
 import Dashboard from "./pages/Dashboard";
 import Friends from "./pages/Friends";
+import Profile from "./pages/Profile";
 import Requests from "./components/Requests";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -23,6 +24,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/friends" element={<Friends />} />
         <Route path="/requests" element={<Requests />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
     </Routes>
   );
