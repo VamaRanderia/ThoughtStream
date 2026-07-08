@@ -17,20 +17,82 @@ function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     bio: "",
-    location: "",
-    profilePicture: ""
+    location: ""
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [removePicture, setRemovePicture] = useState(false);
   const [editError, setEditError] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const [showRemovePhotoModal, setShowRemovePhotoModal] = useState(false);
+  const [isRemovingPhoto, setIsRemovingPhoto] = useState(false);
+
+  // Cleanup preview URL to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleOpenEditModal = () => {
     setEditFormData({
       bio: user?.bio || "",
-      location: user?.location || "",
-      profilePicture: user?.profilePicture || ""
+      location: user?.location || ""
     });
+    setSelectedFile(null);
+    setPreviewUrl(user?.profilePicture || "");
+    setRemovePicture(false);
     setEditError("");
     setShowEditModal(true);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate type and size
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setEditError("Only JPG, JPEG, and PNG files are allowed.");
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5 MB
+    if (file.size > maxSize) {
+      setEditError("File size must be less than 5 MB.");
+      return;
+    }
+
+    setEditError("");
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setRemovePicture(false);
+  };
+
+  const handleRemovePicture = () => {
+    setShowRemovePhotoModal(true);
+  };
+
+  const handleConfirmRemovePhoto = async () => {
+    setIsRemovingPhoto(true);
+    setEditError("");
+
+    try {
+      const data = await updateProfile({
+        removePicture: true
+      });
+      setUser(data.user);
+      setPreviewUrl("");
+      setSelectedFile(null);
+      setShowRemovePhotoModal(false);
+    } catch (err) {
+      setEditError(err.response?.data?.message || "Failed to remove profile picture.");
+    } finally {
+      setIsRemovingPhoto(false);
+    }
   };
 
   const handleSaveProfile = async (e) => {
@@ -39,7 +101,12 @@ function Profile() {
     setEditError("");
 
     try {
-      const data = await updateProfile(editFormData);
+      const data = await updateProfile({
+        bio: editFormData.bio,
+        location: editFormData.location,
+        removePicture: removePicture,
+        profilePictureFile: selectedFile
+      });
       setUser(data.user);
       setShowEditModal(false);
     } catch (err) {
@@ -208,7 +275,6 @@ function Profile() {
   }
 
   const avatarSrc = user?.profilePicture?.trim();
-  const fallbackInitial = user?.username?.charAt(0)?.toUpperCase() || "U";
   const joinedDate = user?.createdAt
     ? new Intl.DateTimeFormat("en", {
         month: "long",
@@ -226,7 +292,7 @@ function Profile() {
             {avatarSrc ? (
               <img src={avatarSrc} alt="" />
             ) : (
-              <span>{fallbackInitial}</span>
+              <i className="bi bi-person-fill" style={{ fontSize: "2.8rem" }}></i>
             )}
           </div>
 
@@ -372,6 +438,38 @@ function Profile() {
                     {editError && (
                       <div className="alert alert-danger py-2 mb-3">{editError}</div>
                     )}
+
+                    <div className="mb-4 text-center">
+                      <div className="profile-avatar-large mx-auto mb-3" aria-hidden="true" style={{ width: "90px", height: "90px" }}>
+                        {previewUrl ? (
+                          <img src={previewUrl} alt="" />
+                        ) : (
+                          <i className="bi bi-person-fill" style={{ fontSize: "2.5rem", color: "var(--text-secondary)" }}></i>
+                        )}
+                      </div>
+                      
+                      <div className="d-flex justify-content-center gap-2">
+                        <label className="btn btn-secondary btn-sm" style={{ cursor: "pointer", borderRadius: "20px" }}>
+                          Upload new photo
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/jpg"
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                          />
+                        </label>
+                        {previewUrl && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            style={{ borderRadius: "20px" }}
+                            onClick={handleRemovePicture}
+                          >
+                            Remove photo
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     
                     <div className="mb-3">
                       <label htmlFor="bio-input" className="form-label text-secondary small">Bio</label>
@@ -397,19 +495,6 @@ function Profile() {
                         placeholder="e.g. San Francisco, CA"
                         value={editFormData.location}
                         onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label htmlFor="avatar-input" className="form-label text-secondary small">Profile Picture URL</label>
-                      <input
-                        id="avatar-input"
-                        type="text"
-                        className="form-control bg-dark border-secondary text-light"
-                        name="profilePicture"
-                        placeholder="https://example.com/avatar.jpg"
-                        value={editFormData.profilePicture}
-                        onChange={(e) => setEditFormData({ ...editFormData, profilePicture: e.target.value })}
                       />
                     </div>
                   </div>
@@ -438,6 +523,64 @@ function Profile() {
           <div
             className="modal-backdrop fade show"
             onClick={() => !isSavingProfile && setShowEditModal(false)}
+          ></div>
+        </>
+      )}
+
+      {showRemovePhotoModal && (
+        <>
+          <div
+            className="modal fade show delete-post-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-photo-modal-title"
+            style={{ display: "block", zIndex: 1100 }}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content delete-post-modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="remove-photo-modal-title">
+                    Remove profile photo
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    aria-label="Close"
+                    onClick={() => setShowRemovePhotoModal(false)}
+                    disabled={isRemovingPhoto}
+                  ></button>
+                </div>
+
+                <div className="modal-body">
+                  Are you sure you want to remove the photo?
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowRemovePhotoModal(false)}
+                    disabled={isRemovingPhoto}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleConfirmRemovePhoto}
+                    disabled={isRemovingPhoto}
+                  >
+                    {isRemovingPhoto ? "Removing..." : "Remove"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop fade show"
+            style={{ zIndex: 1090 }}
+            onClick={() => !isRemovingPhoto && setShowRemovePhotoModal(false)}
           ></div>
         </>
       )}
