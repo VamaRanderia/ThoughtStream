@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "./Sidebar";
 import { getUsers } from "../services/userService";
 import { acceptRequest, getReceivedRequests, sendRequest, rejectRequest } from "../services/requestService";
+import { useImageModal } from "../context/ImageModalContext";
 
 function Requests() {
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
+  const { openImageModal } = useImageModal();
+
   const availableUsers = users.filter(
     (user) => user.status !== "received" && user.status !== "friend"
   );
@@ -48,7 +51,9 @@ function Requests() {
     try {
       await rejectRequest(requestId);
       
-      const senderUsername = requests.find((r) => (r._id || r.id) === requestId)?.sender?.username || "User";
+      const sender = requests.find((r) => (r._id || r.id) === requestId)?.sender || {};
+      const senderUsername = sender.username || "User";
+      const senderProfilePicture = sender.profilePicture;
 
       setRequests((prev) =>
         prev.filter((req) => (req._id || req.id) !== requestId)
@@ -65,6 +70,7 @@ function Requests() {
           {
             _id: senderId,
             username: senderUsername,
+            profilePicture: senderProfilePicture,
             status: "send"
           }
         ];
@@ -78,7 +84,9 @@ function Requests() {
     try {
       await acceptRequest(requestId);
 
-      const senderUsername = requests.find((r) => (r._id || r.id) === requestId)?.sender?.username || "User";
+      const sender = requests.find((r) => (r._id || r.id) === requestId)?.sender || {};
+      const senderUsername = sender.username || "User";
+      const senderProfilePicture = sender.profilePicture;
 
       setRequests((prev) =>
         prev.filter((req) => (req._id || req.id) !== requestId)
@@ -97,6 +105,7 @@ function Requests() {
           {
             _id: senderId,
             username: senderUsername,
+            profilePicture: senderProfilePicture,
             status: "friend"
           }
         ];
@@ -130,25 +139,50 @@ function Requests() {
               </tr>
             </thead>
             <tbody>
-              {requests.map((request) => (
-                <tr key={request._id || request.id}>
-                  <td>{request.sender?.username}</td>
-                  <td>
-                    <button
-                      className="btn btn-primary btn-sm me-2"
-                      onClick={() => handleAccept(request._id || request.id, request.sender?._id)}
-                    >
-                      Accept
-                    </button>
-                    <button 
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleReject(request._id || request.id, request.sender?._id)}
-                    >
-                      Reject
-                    </button>
-                  </td>
+              {requests.map((request) => {
+                const sender = request.sender || {};
+                const avatarSrc = sender.profilePicture?.trim();
+                const fallbackInitial = sender.username?.charAt(0)?.toUpperCase() || "U";
+                return (
+                  <tr key={request._id || request.id}>
+                    <td>
+                      <div className="d-flex align-items-center gap-3">
+                        <div 
+                          className={`avatar-circle ${avatarSrc ? "clickable" : ""}`}
+                          onClick={() => avatarSrc && openImageModal(avatarSrc)}
+                          title={avatarSrc ? "Click to view full image" : ""}
+                        >
+                          {avatarSrc ? (
+                            <img src={avatarSrc} alt="" />
+                          ) : (
+                            <span>{fallbackInitial}</span>
+                          )}
+                        </div>
+                        <span className="fw-semibold">{sender.username}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-primary btn-sm me-2"
+                        onClick={() => handleAccept(request._id || request.id, sender._id || sender.id)}
+                      >
+                        Accept
+                      </button>
+                      <button 
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleReject(request._id || request.id, sender._id || sender.id)}
+                      >
+                        Reject
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+              {requests.length === 0 && (
+                <tr>
+                  <td className="text-secondary" colSpan="2">No pending friend requests.</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -163,28 +197,47 @@ function Requests() {
               </tr>
             </thead>
             <tbody>
-              {availableUsers.map((user) => (
-                <tr key={user._id || user.id}>
-                  <td>{user.username}</td>
-                  <td>
-                    {(!user.status || user.status === "send") && (
-                      <button 
-                        className="btn btn-info btn-sm"
-                        onClick={() => handleSendRequest(user._id || user.id)}
-                      >
-                        Send Request
-                      </button>
-                    )}
+              {availableUsers.map((user) => {
+                const avatarSrc = user.profilePicture?.trim();
+                const fallbackInitial = user.username?.charAt(0)?.toUpperCase() || "U";
+                return (
+                  <tr key={user._id || user.id}>
+                    <td>
+                      <div className="d-flex align-items-center gap-3">
+                        <div 
+                          className={`avatar-circle ${avatarSrc ? "clickable" : ""}`}
+                          onClick={() => avatarSrc && openImageModal(avatarSrc)}
+                          title={avatarSrc ? "Click to view full image" : ""}
+                        >
+                          {avatarSrc ? (
+                            <img src={avatarSrc} alt="" />
+                          ) : (
+                            <span>{fallbackInitial}</span>
+                          )}
+                        </div>
+                        <span className="fw-semibold">{user.username}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {(!user.status || user.status === "send") && (
+                        <button 
+                          className="btn btn-info btn-sm"
+                          onClick={() => handleSendRequest(user._id || user.id)}
+                        >
+                          Send Request
+                        </button>
+                      )}
 
-                    {user.status === "sent" && (
-                      <button className="btn btn-secondary btn-sm" disabled>
-                        Request Sent
-                      </button>
-                    )}
+                      {user.status === "sent" && (
+                        <button className="btn btn-secondary btn-sm" disabled>
+                          Request Sent
+                        </button>
+                      )}
 
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
               {availableUsers.length === 0 && (
                 <tr>
                   <td className="text-secondary" colSpan="2">No users available.</td>

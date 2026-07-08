@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { getUsers } from "../services/userService";
+import { useImageModal } from "../context/ImageModalContext";
 
 function Friends() {
   const [friends, setFriends] = useState([]);
+  const { openImageModal } = useImageModal();
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -41,11 +43,30 @@ function Friends() {
               </tr>
             </thead>
             <tbody>
-              {friends.map((friend) => (
-                <tr key={friend._id || friend.id}>
-                  <td>{friend.username}</td>
-                </tr>
-              ))}
+              {friends.map((friend) => {
+                const avatarSrc = friend.profilePicture?.trim();
+                const fallbackInitial = friend.username?.charAt(0)?.toUpperCase() || "U";
+                return (
+                  <tr key={friend._id || friend.id}>
+                    <td>
+                      <div className="d-flex align-items-center gap-3">
+                        <div 
+                          className={`avatar-circle ${avatarSrc ? "clickable" : ""}`}
+                          onClick={() => avatarSrc && openImageModal(avatarSrc)}
+                          title={avatarSrc ? "Click to view full image" : ""}
+                        >
+                          {avatarSrc ? (
+                            <img src={avatarSrc} alt="" />
+                          ) : (
+                            <span>{fallbackInitial}</span>
+                          )}
+                        </div>
+                        <span className="fw-semibold">{friend.username}</span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {friends.length === 0 && (
                 <tr>
                   <td className="text-secondary">No friends yet.</td>

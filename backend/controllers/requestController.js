@@ -72,7 +72,7 @@ const acceptRequest = async (req, res) => {
             },
             { status: "accepted" },
             { new: true }
-        ).populate("sender", "username");
+        ).populate("sender", "username profilePicture");
 
         if (!request) {
             return res.status(400).json({ 
@@ -94,7 +94,7 @@ const getReceivedRequests = async (req, res) => {
             receiver: req.user.id,
             status: "pending"
         })
-        .populate("sender", "username")
+        .populate("sender", "username profilePicture")
         .sort({ createdAt: -1 });
 
         res.status(200).json(requests);
@@ -115,7 +115,7 @@ const rejectRequest = async (req, res) => {
             },
             { status: "rejected" },
             { new: true }
-        ).populate("sender", "username");
+        ).populate("sender", "username profilePicture");
 
         if (!request) {
             return res.status(404).json({ 

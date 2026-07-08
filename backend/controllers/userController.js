@@ -6,7 +6,7 @@ const getAllUsers = async (req, res) => {
         const loggedInUserId = req.user.id;
         const users = await User.find(
             { _id: { $ne: loggedInUserId } },
-            "username"
+            "username profilePicture"
         );
 
         const requests = await FriendRequest.find({

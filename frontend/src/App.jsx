@@ -9,24 +9,27 @@ import Profile from "./pages/Profile";
 import Requests from "./components/Requests";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import { ImageModalProvider } from "./context/ImageModalContext";
 
 function App() {
   return (
-    <Routes>
-      <Route element={<PublicRoute />}>
-        <Route path="/" element={<Signup />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-      </Route>
+    <ImageModalProvider>
+      <Routes>
+        <Route element={<PublicRoute />}>
+          <Route path="/" element={<Signup />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+        </Route>
 
-      <Route element={<ProtectedRoute />}>
-        <Route path="/complete-profile" element={<CompleteProfile />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/requests" element={<Requests />} />
-        <Route path="/profile" element={<Profile />} />
-      </Route>
-    </Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/complete-profile" element={<CompleteProfile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/requests" element={<Requests />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+      </Routes>
+    </ImageModalProvider>
   );
 }
 

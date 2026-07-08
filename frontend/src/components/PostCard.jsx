@@ -1,6 +1,8 @@
 import { FaHeart, FaRegHeart, FaTrash } from "react-icons/fa";
+import { useImageModal } from "../context/ImageModalContext";
 
 function PostCard({ post, currentUserId, onDeletePost, isDeleting, onToggleLike }) {
+  const { openImageModal } = useImageModal();
   const author = post.author || {};
   const authorId = author._id || author.id;
   const isAuthor = authorId === currentUserId;
@@ -23,7 +25,12 @@ function PostCard({ post, currentUserId, onDeletePost, isDeleting, onToggleLike 
 
   return (
     <article className="post-card">
-      <div className="post-avatar" aria-hidden="true">
+      <div 
+        className={`post-avatar ${avatarSrc ? "clickable" : ""}`} 
+        aria-hidden="true"
+        onClick={() => avatarSrc && openImageModal(avatarSrc)}
+        title={avatarSrc ? "Click to view full image" : ""}
+      >
         {avatarSrc ? (
           <img src={avatarSrc} alt="" />
         ) : (

@@ -4,9 +4,11 @@ import PostCard from "../components/PostCard";
 import { getCurrentUser } from "../services/authService";
 import { deletePost, getPosts, toggleLikePost } from "../services/postService";
 import { updateProfile } from "../services/profileService";
+import { useImageModal } from "../context/ImageModalContext";
 
 function Profile() {
   const [user, setUser] = useState(null);
+  const { openImageModal } = useImageModal();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -288,7 +290,12 @@ function Profile() {
 
       <div className="dashboard-content">
         <div className="profile-header-card">
-          <div className="profile-avatar-large" aria-hidden="true">
+          <div 
+            className={`profile-avatar-large ${avatarSrc ? "clickable" : ""}`} 
+            aria-hidden="true"
+            onClick={() => avatarSrc && openImageModal(avatarSrc)}
+            title={avatarSrc ? "Click to view full image" : ""}
+          >
             {avatarSrc ? (
               <img src={avatarSrc} alt="" />
             ) : (

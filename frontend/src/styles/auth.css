@@ -848,3 +848,158 @@
 .edit-profile-modal textarea {
     resize: none;
 }
+
+/* --- Circular Avatars beside Usernames --- */
+.avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: #24363a;
+    color: var(--accent-hover);
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, .08);
+    flex-shrink: 0;
+    cursor: default;
+    user-select: none;
+}
+
+.avatar-circle.clickable {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-circle.clickable:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(36, 181, 197, 0.4);
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-circle span {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+/* --- Interactive Hover Effects for existing Avatars --- */
+.post-avatar.clickable {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post-avatar.clickable:hover {
+    transform: scale(1.08);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(36, 181, 197, 0.5);
+}
+
+.profile-avatar-large.clickable {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-avatar-large.clickable:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 20px rgba(36, 181, 197, 0.6);
+}
+
+/* --- Lightbox Modal CSS --- */
+.image-lightbox-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: default;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.lightbox-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: var(--radius);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--border);
+}
+
+.lightbox-close-btn {
+    position: absolute;
+    top: -45px;
+    right: -45px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 2.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    padding: 5px;
+}
+
+.lightbox-close-btn:hover {
+    color: var(--accent);
+    transform: scale(1.15);
+}
+
+@media (max-width: 768px) {
+    .lightbox-close-btn {
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+}
+
+.lightbox-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    z-index: 9999;
+}
+
