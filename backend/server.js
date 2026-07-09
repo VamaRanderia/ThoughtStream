@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const express = require("express");
 const mongoose = require("mongoose");
+const rateLimit = require("express-rate-limit");
 
 const User = require("./models/User");
 const FriendRequest = require("./models/FriendRequest");
@@ -13,6 +14,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const protect = require("./middleware/authMiddleware");
 const requestRoutes = require("./routes/requestRoutes");
 const userRoutes = require("./routes/userRoutes.js");
+const errorHandler = require("./middleware/errorMiddleware");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +25,28 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json());
+
+// Rate Limiting
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: { success: false, message: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    message: { success: false, message: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Apply rate limiting
+app.use("/api", generalLimiter);
+app.use("/api/auth/signup", authLimiter);
+app.use("/api/auth/login", authLimiter);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
@@ -141,6 +165,8 @@ app.get("/profile", protect, (req, res) => {
         user: req.user
     });
 });
+
+app.use(errorHandler);
 
 mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 5000
