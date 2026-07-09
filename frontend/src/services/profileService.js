@@ -11,6 +11,9 @@ export const updateProfile = async (profileData) => {
     if (profileData.location !== undefined) {
         formData.append("location", profileData.location);
     }
+    if (profileData.portfolioUrl !== undefined) {
+        formData.append("portfolioUrl", profileData.portfolioUrl);
+    }
     if (profileData.removePicture !== undefined) {
         formData.append("removePicture", String(profileData.removePicture));
     }

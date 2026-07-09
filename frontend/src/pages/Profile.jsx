@@ -19,8 +19,10 @@ function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     bio: "",
-    location: ""
+    location: "",
+    portfolioUrl: ""
   });
+  const [portfolioError, setPortfolioError] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [removePicture, setRemovePicture] = useState(false);
@@ -42,12 +44,14 @@ function Profile() {
   const handleOpenEditModal = () => {
     setEditFormData({
       bio: user?.bio || "",
-      location: user?.location || ""
+      location: user?.location || "",
+      portfolioUrl: user?.portfolioUrl || ""
     });
     setSelectedFile(null);
     setPreviewUrl(user?.profilePicture || "");
     setRemovePicture(false);
     setEditError("");
+    setPortfolioError("");
     setShowEditModal(true);
   };
 
@@ -101,11 +105,29 @@ function Profile() {
     e.preventDefault();
     setIsSavingProfile(true);
     setEditError("");
+    setPortfolioError("");
+
+    const urlVal = editFormData.portfolioUrl.trim();
+    if (urlVal !== "") {
+      try {
+        const parsed = new URL(urlVal);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+          setPortfolioError("Please enter a valid URL starting with http:// or https://");
+          setIsSavingProfile(false);
+          return;
+        }
+      } catch (err) {
+        setPortfolioError("Please enter a valid URL (including http:// or https://)");
+        setIsSavingProfile(false);
+        return;
+      }
+    }
 
     try {
       const data = await updateProfile({
         bio: editFormData.bio,
         location: editFormData.location,
+        portfolioUrl: editFormData.portfolioUrl,
         removePicture: removePicture,
         profilePictureFile: selectedFile
       });
@@ -319,6 +341,14 @@ function Profile() {
                   <span>{user.location}</span>
                 </div>
               )}
+              {user?.portfolioUrl && (
+                <div className="profile-stat-item">
+                  <i className="bi bi-link-45deg me-2 text-accent"></i>
+                  <a href={user.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover-underline">
+                    {user.portfolioUrl}
+                  </a>
+                </div>
+              )}
               {joinedDate && (
                 <div className="profile-stat-item">
                   <i className="bi bi-calendar3 me-2 text-accent"></i>
@@ -503,6 +533,27 @@ function Profile() {
                         value={editFormData.location}
                         onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
                       />
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="portfolio-input" className="form-label text-secondary small">Website / Portfolio URL</label>
+                      <input
+                        id="portfolio-input"
+                        type="url"
+                        className="form-control bg-dark border-secondary text-light"
+                        name="portfolioUrl"
+                        placeholder="e.g. https://myportfolio.com"
+                        value={editFormData.portfolioUrl}
+                        onChange={(e) => {
+                          setPortfolioError("");
+                          setEditFormData({ ...editFormData, portfolioUrl: e.target.value });
+                        }}
+                      />
+                      {portfolioError && (
+                        <div className="text-danger small mt-1" id="portfolio-error-msg">
+                          {portfolioError}
+                        </div>
+                      )}
                     </div>
                   </div>
 

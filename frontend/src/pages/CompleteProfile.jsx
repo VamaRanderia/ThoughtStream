@@ -7,8 +7,10 @@ function CompleteProfile() {
 
   const [formData, setFormData] = useState({
     bio: "",
-    location: ""
+    location: "",
+    portfolioUrl: ""
   });
+  const [portfolioError, setPortfolioError] = useState("");
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -29,6 +31,9 @@ function CompleteProfile() {
   }, [previewUrl]);
 
   const handleChange = (e) => {
+    if (e.target.name === "portfolioUrl") {
+      setPortfolioError("");
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -72,10 +77,27 @@ function CompleteProfile() {
       message: "",
     });
 
+    const urlVal = formData.portfolioUrl.trim();
+    if (urlVal !== "") {
+      try {
+        const parsed = new URL(urlVal);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+          setPortfolioError("Please enter a valid URL starting with http:// or https://");
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err) {
+        setPortfolioError("Please enter a valid URL (including http:// or https://)");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       await updateProfile({
         bio: formData.bio,
         location: formData.location,
+        portfolioUrl: formData.portfolioUrl,
         profilePictureFile: selectedFile
       });
 
@@ -159,13 +181,28 @@ function CompleteProfile() {
           />
 
           <input
-            className="form-control mb-4 bg-dark border-secondary text-light"
+            className="form-control mb-3 bg-dark border-secondary text-light"
             type="text"
             name="location"
             placeholder="Location"
             value={formData.location}
             onChange={handleChange}
           />
+
+          <input
+            id="portfolio-input"
+            className="form-control mb-3 bg-dark border-secondary text-light"
+            type="url"
+            name="portfolioUrl"
+            placeholder="Website / Portfolio URL (e.g. https://myportfolio.com)"
+            value={formData.portfolioUrl}
+            onChange={handleChange}
+          />
+          {portfolioError && (
+            <div className="text-danger small text-start mb-3" id="portfolio-error-msg" style={{ marginTop: "-8px" }}>
+              {portfolioError}
+            </div>
+          )}
 
           <button type="submit" className="btn-accent" disabled={isSubmitting}>
             {isSubmitting ? "Saving..." : "Save Profile"}

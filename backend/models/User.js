@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema(
         default: ""
     },
 
+    portfolioUrl: {
+        type: String,
+        default: ""
+    },
+
     isProfileComplete: {
         type: Boolean,
         default: false

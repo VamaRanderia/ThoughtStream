@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
+const validator = require("validator");
 
 const uploadToCloudinary = (fileBuffer) => {
     return new Promise((resolve, reject) => {
@@ -27,7 +28,7 @@ const deleteFromCloudinary = async (publicId) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { bio, location, removePicture } = req.body;
+        const { bio, location, removePicture, portfolioUrl } = req.body;
         const user = await User.findById(req.user.id);
 
         if (!user) {
@@ -65,6 +66,25 @@ const updateProfile = async (req, res) => {
 
         if (bio !== undefined) user.bio = bio;
         if (location !== undefined) user.location = location;
+
+        if (portfolioUrl !== undefined) {
+            const trimmedUrl = portfolioUrl.trim();
+            if (trimmedUrl !== "") {
+                const isValid = validator.isURL(trimmedUrl, {
+                    protocols: ["http", "https"],
+                    require_protocol: true
+                });
+
+                if (!isValid) {
+                    return res.status(400).json({
+                        message: "Please enter a valid URL starting with http:// or https://"
+                    });
+                }
+                user.portfolioUrl = trimmedUrl;
+            } else {
+                user.portfolioUrl = "";
+            }
+        }
 
         user.isProfileComplete = true;
 
