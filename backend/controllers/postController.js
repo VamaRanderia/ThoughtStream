@@ -45,11 +45,16 @@ const getPosts = async (req, res, next) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const skip = (page - 1) * limit;
 
-        const totalPosts = await Post.countDocuments();
+        const filter = {};
+        if (req.query.author) {
+            filter.author = req.query.author;
+        }
+
+        const totalPosts = await Post.countDocuments(filter);
         const totalPages = Math.ceil(totalPosts / limit);
         const hasNextPage = page < totalPages;
 
-        const posts = await Post.find()
+        const posts = await Post.find(filter)
             .populate("author", postAuthorFields)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -139,9 +144,41 @@ const toggleLikePost = async (req, res, next) => {
     }
 };
 
+const searchPosts = async (req, res, next) => {
+    try {
+        const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        const filter = query ? { content: { $regex: query, $options: "i" } } : {};
+
+        const totalPosts = await Post.countDocuments(filter);
+        const totalPages = Math.ceil(totalPosts / limit);
+        const hasNextPage = page < totalPages;
+
+        const posts = await Post.find(filter)
+            .populate("author", postAuthorFields)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            posts,
+            currentPage: page,
+            totalPages,
+            totalPosts,
+            hasNextPage
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createPost,
     getPosts,
     deletePost,
-    toggleLikePost
+    toggleLikePost,
+    searchPosts
 };

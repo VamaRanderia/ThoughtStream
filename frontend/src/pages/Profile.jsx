@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard";
 import { getCurrentUser } from "../services/authService";
 import { deletePost, getPosts, toggleLikePost } from "../services/postService";
 import { updateProfile, getProfilePosts } from "../services/profileService";
+import { getUserById } from "../services/userService";
 import { useImageModal } from "../context/ImageModalContext";
 
 function Profile() {
+  const { id } = useParams();
   const [user, setUser] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const { openImageModal } = useImageModal();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -176,7 +180,7 @@ function Profile() {
   };
 
   const handleToggleLike = async (postId) => {
-    const currentUserId = user?.id || user?._id || "";
+    const currentUserId = loggedInUser?.id || loggedInUser?._id || "";
     if (!currentUserId) return;
 
     setPosts((prevPosts) =>
@@ -240,15 +244,33 @@ function Profile() {
       setError("");
 
       try {
-        const [currentUserData, userSpecificPosts] = await Promise.all([
-          getCurrentUser(),
-          getProfilePosts()
-        ]);
-
+        const currentUserData = await getCurrentUser();
+        const loggedInUserObj = currentUserData.user;
+        
         if (isMounted) {
-          const loggedInUser = currentUserData.user;
-          setUser(loggedInUser);
-          setPosts(userSpecificPosts);
+          setLoggedInUser(loggedInUserObj);
+        }
+
+        const loggedInId = loggedInUserObj?.id || loggedInUserObj?._id;
+
+        if (id && id !== loggedInId) {
+          // Fetch another user's profile and posts
+          const [otherUser, postsData] = await Promise.all([
+            getUserById(id),
+            getPosts(1, 100, id)
+          ]);
+
+          if (isMounted) {
+            setUser(otherUser);
+            setPosts(postsData.posts || []);
+          }
+        } else {
+          // Fetch logged-in user's profile and posts
+          const userSpecificPosts = await getProfilePosts();
+          if (isMounted) {
+            setUser(loggedInUserObj);
+            setPosts(userSpecificPosts);
+          }
         }
       } catch (err) {
         if (isMounted) {
@@ -266,7 +288,7 @@ function Profile() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -320,9 +342,11 @@ function Profile() {
           <div className="profile-details">
             <div className="profile-title-row">
               <h2 className="profile-username">{user?.username || "Unknown User"}</h2>
-              <button className="btn-edit-profile" onClick={handleOpenEditModal}>
-                <i className="bi bi-pencil me-2"></i>Edit Profile
-              </button>
+              {(!id || id === (loggedInUser?.id || loggedInUser?._id)) && (
+                <button className="btn-edit-profile" onClick={handleOpenEditModal}>
+                  <i className="bi bi-pencil me-2"></i>Edit Profile
+                </button>
+              )}
             </div>
             <p className="profile-bio">{user?.bio || "No bio added yet."}</p>
             
@@ -356,21 +380,27 @@ function Profile() {
         </div>
 
         <div className="profile-feed-section">
-          <h3 className="profile-posts-title">My Posts</h3>
+          <h3 className="profile-posts-title">
+            {(!id || id === (loggedInUser?.id || loggedInUser?._id)) ? "My Posts" : `${user?.username || "User"}'s Posts`}
+          </h3>
           
           {deleteError && (
             <div className="feed-inline-error">{deleteError}</div>
           )}
 
           {posts.length === 0 ? (
-            <div className="feed-state">You haven't posted anything yet.</div>
+            <div className="feed-state">
+              {(!id || id === (loggedInUser?.id || loggedInUser?._id)) 
+                ? "You haven't posted anything yet." 
+                : `${user?.username || "This user"} hasn't posted anything yet.`}
+            </div>
           ) : (
             <section className="feed-list" aria-label="User posts feed">
               {posts.map((post) => (
                 <PostCard
                   key={post._id || post.id}
                   post={post}
-                  currentUserId={user?.id || user?._id || ""}
+                  currentUserId={loggedInUser?.id || loggedInUser?._id || ""}
                   onDeletePost={handleDeletePost}
                   isDeleting={deletingPostId === (post._id || post.id)}
                   onToggleLike={handleToggleLike}

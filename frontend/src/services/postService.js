@@ -2,8 +2,17 @@ import api from "./api";
 
 const API_URL = "/api/posts";
 
-export const getPosts = async (page = 1, limit = 10) => {
-  const response = await api.get(`${API_URL}?page=${page}&limit=${limit}`);
+export const getPosts = async (page = 1, limit = 10, author = "") => {
+  let url = `${API_URL}?page=${page}&limit=${limit}`;
+  if (author) {
+    url += `&author=${author}`;
+  }
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const searchPostsApi = async (query, page = 1, limit = 10) => {
+  const response = await api.get(`${API_URL}/search?q=${query}&page=${page}&limit=${limit}`);
   return response.data;
 };
 

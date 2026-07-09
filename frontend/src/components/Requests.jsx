@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { getUsers } from "../services/userService";
+import { getUsers, searchUsers } from "../services/userService";
 import { acceptRequest, getReceivedRequests, sendRequest, rejectRequest, cancelRequest } from "../services/requestService";
 import { useImageModal } from "../context/ImageModalContext";
 
 function Requests() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
   const { openImageModal } = useImageModal();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const debounceTimeoutRef = useRef(null);
 
   const availableUsers = users.filter(
     (user) => user.status !== "received" && user.status !== "friend"
@@ -16,6 +21,11 @@ function Requests() {
   useEffect(() => {
     fetchUsers();
     fetchRequests();
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
   }, []);
 
   const fetchUsers = async () => {
@@ -25,6 +35,29 @@ function Requests() {
     } catch (error) {
       console.log("Error fetching users:", error);
     }
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    if (!value.trim()) {
+      fetchUsers();
+      return;
+    }
+
+    debounceTimeoutRef.current = setTimeout(async () => {
+      try {
+        const data = await searchUsers(value.trim());
+        setUsers(data);
+      } catch (error) {
+        console.error("Error searching users:", error);
+      }
+    }, 400);
   };
 
   const fetchRequests = async () => {
@@ -173,7 +206,13 @@ function Requests() {
                             <span>{fallbackInitial}</span>
                           )}
                         </div>
-                        <span className="fw-semibold">{sender.username}</span>
+                        <span 
+                          className="fw-semibold text-hover-accent" 
+                          style={{ cursor: "pointer" }}
+                          onClick={() => navigate(`/profile/${sender._id || sender.id}`)}
+                        >
+                          {sender.username}
+                        </span>
                       </div>
                     </td>
                     <td>
@@ -203,7 +242,26 @@ function Requests() {
         </div>
 
         <div className="dashboard-card">
-          <h4 className="mb-4">All Users</h4>
+          <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <h4 className="mb-0">All Users</h4>
+            
+            {/* User Search Input */}
+            <div style={{ width: "min(320px, 100%)" }}>
+              <div className="input-group input-group-sm">
+                <span className="input-group-text bg-dark border-secondary text-secondary">
+                  <i className="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  className="form-control bg-dark text-white border-secondary"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+          </div>
+          
           <table className="table table-dark table-borderless align-middle">
             <thead>
               <tr>
@@ -230,7 +288,13 @@ function Requests() {
                             <span>{fallbackInitial}</span>
                           )}
                         </div>
-                        <span className="fw-semibold">{user.username}</span>
+                        <span 
+                          className="fw-semibold text-hover-accent" 
+                          style={{ cursor: "pointer" }}
+                          onClick={() => navigate(`/profile/${user._id || user.id}`)}
+                        >
+                          {user.username}
+                        </span>
                       </div>
                     </td>
                     <td>

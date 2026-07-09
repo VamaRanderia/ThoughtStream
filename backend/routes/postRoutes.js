@@ -8,11 +8,13 @@ const {
     createPost,
     getPosts,
     deletePost,
-    toggleLikePost
+    toggleLikePost,
+    searchPosts
 } = require("../controllers/postController");
 
 router.post("/", protect, validateCreatePost, createPost);
 router.get("/", protect, getPosts);
+router.get("/search", protect, searchPosts);
 router.delete("/:id", protect, validateIdParam, deletePost);
 router.post("/:id/like", protect, validateIdParam, toggleLikePost);
 

@@ -5,3 +5,13 @@ export const getUsers = async () => {
 
     return response.data;
 };
+
+export const searchUsers = async (query) => {
+    const response = await api.get(`/api/users/search?q=${query}`);
+    return response.data;
+};
+
+export const getUserById = async (id) => {
+    const response = await api.get(`/api/users/${id}`);
+    return response.data;
+};

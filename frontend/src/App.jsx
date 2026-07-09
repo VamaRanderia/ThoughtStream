@@ -27,6 +27,7 @@ function App() {
           <Route path="/friends" element={<Friends />} />
           <Route path="/requests" element={<Requests />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:id" element={<Profile />} />
         </Route>
       </Routes>
     </ImageModalProvider>

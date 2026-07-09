@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import { getCurrentUser } from "../services/authService";
-import { deletePost, getPosts, toggleLikePost } from "../services/postService";
+import { deletePost, getPosts, toggleLikePost, searchPostsApi } from "../services/postService";
 
 function Feed() {
   const [posts, setPosts] = useState([]);
@@ -18,6 +18,10 @@ function Feed() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const observerRef = useRef();
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const debounceSearchTimeoutRef = useRef(null);
 
   const handlePostCreated = (post) => {
     setPosts((prevPosts) => [post, ...prevPosts]);
@@ -116,7 +120,12 @@ function Feed() {
   const loadMorePosts = async () => {
     setIsFetchingNextPage(true);
     try {
-      const data = await getPosts(page + 1, 10);
+      let data;
+      if (searchQuery.trim()) {
+        data = await searchPostsApi(searchQuery.trim(), page + 1, 10);
+      } else {
+        data = await getPosts(page + 1, 10);
+      }
       setPosts((prevPosts) => [...prevPosts, ...(data.posts || [])]);
       setPage((prevPage) => prevPage + 1);
       setHasNextPage(data.hasNextPage || false);
@@ -126,6 +135,48 @@ function Feed() {
       setIsFetchingNextPage(false);
     }
   };
+
+  const handleSearchPostsChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (debounceSearchTimeoutRef.current) {
+      clearTimeout(debounceSearchTimeoutRef.current);
+    }
+
+    debounceSearchTimeoutRef.current = setTimeout(() => {
+      triggerSearch(value.trim());
+    }, 400);
+  };
+
+  const triggerSearch = async (query) => {
+    setIsLoading(true);
+    setError("");
+    setPage(1);
+
+    try {
+      let data;
+      if (query) {
+        data = await searchPostsApi(query, 1, 10);
+      } else {
+        data = await getPosts(1, 10);
+      }
+      setPosts(data.posts || []);
+      setHasNextPage(data.hasNextPage || false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to load search results.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (debounceSearchTimeoutRef.current) {
+        clearTimeout(debounceSearchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -186,66 +237,64 @@ function Feed() {
     };
   }, [isLoading, isFetchingNextPage, hasNextPage, page]);
 
-  if (isLoading) {
-    return (
-      <>
-        <CreatePost onPostCreated={handlePostCreated} />
-        <div className="feed-state">
-          Loading feed...
-        </div>
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <CreatePost onPostCreated={handlePostCreated} />
-        <div className="feed-state feed-error">
-          {error}
-        </div>
-      </>
-    );
-  }
-
-  if (posts.length === 0) {
-    return (
-      <>
-        <CreatePost onPostCreated={handlePostCreated} />
-        <div className="feed-state">
-          No posts yet.
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
+      {/* Post Search Input */}
+      <div className="mb-4">
+        <div className="input-group">
+          <span className="input-group-text bg-dark border-secondary text-secondary">
+            <i className="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            className="form-control bg-dark text-white border-secondary"
+            placeholder="Search posts..."
+            value={searchQuery}
+            onChange={handleSearchPostsChange}
+          />
+        </div>
+      </div>
+
       <CreatePost onPostCreated={handlePostCreated} />
+      
       {deleteError && (
         <div className="feed-inline-error">{deleteError}</div>
       )}
-      <section className="feed-list" aria-label="Global feed">
-        {posts.map((post) => (
-          <PostCard
-            key={post._id || post.id}
-            post={post}
-            currentUserId={currentUserId}
-            onDeletePost={handleDeletePost}
-            isDeleting={deletingPostId === (post._id || post.id)}
-            onToggleLike={handleToggleLike}
-          />
-        ))}
-      </section>
 
-      {/* Sentinel element for Infinite Scroll */}
-      <div ref={observerRef} style={{ height: "20px", margin: "10px 0" }}></div>
-
-      {isFetchingNextPage && (
-        <div className="feed-state text-center py-3">
-          <div className="spinner-border spinner-border-sm text-info me-2" role="status"></div>
-          <span>Loading more posts...</span>
+      {isLoading ? (
+        <div className="feed-state text-center py-4">
+          <div className="spinner-border text-info" role="status"></div>
+          <div className="mt-2 text-secondary">Loading feed...</div>
         </div>
+      ) : error ? (
+        <div className="feed-state feed-error">{error}</div>
+      ) : posts.length === 0 ? (
+        <div className="feed-state">No posts found.</div>
+      ) : (
+        <>
+          <section className="feed-list" aria-label="Global feed">
+            {posts.map((post) => (
+              <PostCard
+                key={post._id || post.id}
+                post={post}
+                currentUserId={currentUserId}
+                onDeletePost={handleDeletePost}
+                isDeleting={deletingPostId === (post._id || post.id)}
+                onToggleLike={handleToggleLike}
+              />
+            ))}
+          </section>
+
+          {/* Sentinel element for Infinite Scroll */}
+          <div ref={observerRef} style={{ height: "20px", margin: "10px 0" }}></div>
+
+          {isFetchingNextPage && (
+            <div className="feed-state text-center py-3">
+              <div className="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+              <span>Loading more posts...</span>
+            </div>
+          )}
+        </>
       )}
 
       {postPendingDelete && (
