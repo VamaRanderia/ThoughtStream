@@ -470,7 +470,7 @@ function Profile() {
                   ></button>
                 </div>
 
-                <form onSubmit={handleSaveProfile}>
+                <form noValidate onSubmit={handleSaveProfile}>
                   <div className="modal-body">
                     {editError && (
                       <div className="alert alert-danger py-2 mb-3">{editError}</div>
@@ -550,7 +550,7 @@ function Profile() {
                         }}
                       />
                       {portfolioError && (
-                        <div className="text-danger small mt-1" id="portfolio-error-msg">
+                        <div className="portfolio-error-message" id="portfolio-error-msg">
                           {portfolioError}
                         </div>
                       )}

@@ -140,7 +140,7 @@ function CompleteProfile() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form noValidate onSubmit={handleSubmit}>
           <div className="mb-4 text-center">
             {previewUrl ? (
               <div className="profile-avatar-preview mb-3">
@@ -199,7 +199,7 @@ function CompleteProfile() {
             onChange={handleChange}
           />
           {portfolioError && (
-            <div className="text-danger small text-start mb-3" id="portfolio-error-msg" style={{ marginTop: "-8px" }}>
+            <div className="portfolio-error-message" id="portfolio-error-msg">
               {portfolioError}
             </div>
           )}

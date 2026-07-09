@@ -1003,3 +1003,13 @@
     z-index: 9999;
 }
 
+.portfolio-error-message {
+    color: #ff4d4d !important;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    text-align: left;
+    display: block;
+    width: 100%;
+}
+

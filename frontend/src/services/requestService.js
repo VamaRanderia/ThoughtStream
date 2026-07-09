@@ -24,3 +24,8 @@ export const rejectRequest = async (id) => {
     const response = await api.delete(`${API}/${id}/reject`);
     return response.data;
 };
+
+export const cancelRequest = async (id) => {
+    const response = await api.delete(`${API}/${id}/cancel`);
+    return response.data;
+};

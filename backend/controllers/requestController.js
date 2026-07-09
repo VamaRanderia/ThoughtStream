@@ -134,9 +134,42 @@ const rejectRequest = async (req, res) => {
     }
 };
 
+const cancelRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const senderId = req.user.id;
+
+        // Find the pending request sent by the current user
+        const request = await FriendRequest.findOne({
+            _id: id,
+            sender: senderId,
+            status: "pending"
+        });
+
+        if (!request) {
+            return res.status(404).json({
+                message: "Pending request not found or cannot be cancelled"
+            });
+        }
+
+        // Delete the request from the database
+        await FriendRequest.deleteOne({ _id: id });
+
+        res.status(200).json({
+            message: "Friend request cancelled successfully",
+            requestId: id
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Server Error"
+        });
+    }
+};
+
 module.exports = {
     sendRequest,
     acceptRequest,
     getReceivedRequests,
-    rejectRequest
+    rejectRequest,
+    cancelRequest
 };

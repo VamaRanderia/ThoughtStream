@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import { getUsers } from "../services/userService";
-import { acceptRequest, getReceivedRequests, sendRequest, rejectRequest } from "../services/requestService";
+import { acceptRequest, getReceivedRequests, sendRequest, rejectRequest, cancelRequest } from "../services/requestService";
 import { useImageModal } from "../context/ImageModalContext";
 
 function Requests() {
@@ -38,12 +38,27 @@ function Requests() {
 
   const handleSendRequest = async (receiverId) => {
     try {
-      await sendRequest(receiverId);
+      const data = await sendRequest(receiverId);
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          (user._id || user.id) === receiverId? { ...user, status: "sent" }: user));
+          (user._id || user.id) === receiverId ? { ...user, status: "sent", requestId: data._id || data.id } : user
+        )
+      );
     } catch (error) {
       console.log("Error sending request:", error);
+    }
+  };
+
+  const handleCancelRequest = async (requestId, userId) => {
+    try {
+      await cancelRequest(requestId);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          (user._id || user.id) === userId ? { ...user, status: "send", requestId: undefined } : user
+        )
+      );
+    } catch (error) {
+      console.log("Error cancelling request:", error);
     }
   };
 
@@ -229,7 +244,20 @@ function Requests() {
                       )}
 
                       {user.status === "sent" && (
-                        <button className="btn btn-secondary btn-sm" disabled>
+                        <button 
+                          className="btn btn-secondary btn-sm request-sent-btn"
+                          onClick={() => handleCancelRequest(user.requestId, user._id || user.id)}
+                          onMouseEnter={(e) => {
+                            e.target.innerText = "Cancel Request";
+                            e.target.classList.remove("btn-secondary");
+                            e.target.classList.add("btn-danger");
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.innerText = "Request Sent";
+                            e.target.classList.remove("btn-danger");
+                            e.target.classList.add("btn-secondary");
+                          }}
+                        >
                           Request Sent
                         </button>
                       )}
