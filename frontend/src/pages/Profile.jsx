@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import PostCard from "../components/PostCard";
 import { getCurrentUser } from "../services/authService";
 import { deletePost, getPosts, toggleLikePost } from "../services/postService";
-import { updateProfile } from "../services/profileService";
+import { updateProfile, getProfilePosts } from "../services/profileService";
 import { useImageModal } from "../context/ImageModalContext";
 
 function Profile() {
@@ -240,22 +240,14 @@ function Profile() {
       setError("");
 
       try {
-        const [currentUserData, postData] = await Promise.all([
+        const [currentUserData, userSpecificPosts] = await Promise.all([
           getCurrentUser(),
-          getPosts()
+          getProfilePosts()
         ]);
 
         if (isMounted) {
           const loggedInUser = currentUserData.user;
           setUser(loggedInUser);
-
-          const currentUserId = loggedInUser?.id || loggedInUser?._id || "";
-          const userSpecificPosts = postData.filter(
-            (post) => {
-              const authorId = post.author?._id || post.author?.id || post.author;
-              return authorId === currentUserId;
-            }
-          );
           setPosts(userSpecificPosts);
         }
       } catch (err) {

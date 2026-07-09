@@ -29,3 +29,8 @@ export const updateProfile = async (profileData) => {
 
     return response.data;
 };
+
+export const getProfilePosts = async () => {
+    const response = await api.get(`${API_URL}/posts`);
+    return response.data;
+};

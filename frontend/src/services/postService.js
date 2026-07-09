@@ -2,8 +2,8 @@ import api from "./api";
 
 const API_URL = "/api/posts";
 
-export const getPosts = async () => {
-  const response = await api.get(API_URL);
+export const getPosts = async (page = 1, limit = 10) => {
+  const response = await api.get(`${API_URL}?page=${page}&limit=${limit}`);
   return response.data;
 };
 

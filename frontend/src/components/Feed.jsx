@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import { getCurrentUser } from "../services/authService";
@@ -12,6 +12,12 @@ function Feed() {
   const [deleteError, setDeleteError] = useState("");
   const [deletingPostId, setDeletingPostId] = useState("");
   const [postPendingDelete, setPostPendingDelete] = useState(null);
+
+  // Infinite Scroll state
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
+  const observerRef = useRef();
 
   const handlePostCreated = (post) => {
     setPosts((prevPosts) => [post, ...prevPosts]);
@@ -107,6 +113,20 @@ function Feed() {
     }
   };
 
+  const loadMorePosts = async () => {
+    setIsFetchingNextPage(true);
+    try {
+      const data = await getPosts(page + 1, 10);
+      setPosts((prevPosts) => [...prevPosts, ...(data.posts || [])]);
+      setPage((prevPage) => prevPage + 1);
+      setHasNextPage(data.hasNextPage || false);
+    } catch (err) {
+      console.error("Error loading more posts:", err);
+    } finally {
+      setIsFetchingNextPage(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -117,12 +137,14 @@ function Feed() {
       try {
         const [currentUserData, postData] = await Promise.all([
           getCurrentUser(),
-          getPosts()
+          getPosts(1, 10)
         ]);
 
         if (isMounted) {
           setCurrentUserId(currentUserData.user?.id || currentUserData.user?._id || "");
-          setPosts(postData);
+          setPosts(postData.posts || []);
+          setHasNextPage(postData.hasNextPage || false);
+          setPage(1);
         }
       } catch (err) {
         if (isMounted) {
@@ -139,6 +161,30 @@ function Feed() {
 
     return () => {isMounted = false;};
   }, []);
+
+  useEffect(() => {
+    if (isLoading || isFetchingNextPage || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentSentinel = observerRef.current;
+    if (currentSentinel) {
+      observer.observe(currentSentinel);
+    }
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
+      }
+    };
+  }, [isLoading, isFetchingNextPage, hasNextPage, page]);
 
   if (isLoading) {
     return (
@@ -191,6 +237,16 @@ function Feed() {
           />
         ))}
       </section>
+
+      {/* Sentinel element for Infinite Scroll */}
+      <div ref={observerRef} style={{ height: "20px", margin: "10px 0" }}></div>
+
+      {isFetchingNextPage && (
+        <div className="feed-state text-center py-3">
+          <div className="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+          <span>Loading more posts...</span>
+        </div>
+      )}
 
       {postPendingDelete && (
         <>
