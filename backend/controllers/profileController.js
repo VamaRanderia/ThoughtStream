@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Post = require("../models/Post");
 const cloudinary = require("../config/cloudinary");
 const validator = require("validator");
 
@@ -101,6 +102,37 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
+const getProfilePosts = async (req, res) => {
+    try {
+        const posts = await Post.find({ author: req.user.id })
+            .populate("author", "username profilePicture")
+            .sort({ createdAt: -1 });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
-    updateProfile
+    updateProfile,
+    getProfile,
+    getProfilePosts
 };
