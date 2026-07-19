@@ -29,7 +29,7 @@ app.use(express.json());
 // Rate Limiting
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
+    max: 1000, // Increased threshold to handle higher concurrency
     message: { success: false, message: "Too many requests, please try again later." },
     standardHeaders: true,
     legacyHeaders: false
@@ -37,7 +37,7 @@ const generalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5,
+    max: 60, // Increased threshold to support typical client usage and testing
     message: { success: false, message: "Too many requests, please try again later." },
     standardHeaders: true,
     legacyHeaders: false
@@ -61,111 +61,6 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-app.get("/users", protect, async (req, res) => {
-    try {
-        const loggedInUserId = req.user.id;
-        const users = await User.find({ _id: { $ne: loggedInUserId } });
-
-        const requests = await FriendRequest.find({
-            $or: [{ sender: loggedInUserId }, { receiver: loggedInUserId }]
-        });
-
-        const usersWithStatus = users.map(user => {
-            const userObj = user.toObject();
-            const relation = requests.find(r => 
-                (r.sender.toString() === loggedInUserId && r.receiver.toString() === user._id.toString()) ||
-                (r.receiver.toString() === loggedInUserId && r.sender.toString() === user._id.toString())
-            );
-
-            if (!relation) {
-                userObj.status = "send";
-            } else if (relation.status === "accepted") {
-                userObj.status = "friend";
-            } else if (relation.status === "pending" && relation.sender.toString() === loggedInUserId) {
-                userObj.status = "sent";
-            } else {
-                userObj.status = "send";
-            }
-
-            return userObj;
-        });
-
-        res.json(usersWithStatus);
-    }
-    catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-    }
-});
-
-app.get("/users/:id", async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-        res.json(user);
-    }
-    catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-    }
-});
-
-app.put("/users/:id", async (req, res) => {
-    try {
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            {
-                new: true,
-                runValidators: true
-            }
-        );
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-        res.json(user);
-    }
-    catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-    }
-});
-
-app.delete("/users/:id", async (req, res) => {
-    try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-        res.json({
-            message: "User deleted successfully"
-        });
-    }
-    catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-    }
-});
-
-app.get("/profile", protect, (req, res) => {
-    res.json({
-        message: "Protected Route",
-        user: req.user
-    });
-});
-
 app.use(errorHandler);
 
 mongoose.connect(process.env.MONGO_URI, {
@@ -181,24 +76,4 @@ mongoose.connect(process.env.MONGO_URI, {
         console.error("MongoDB connection failed:", err.message);
         process.exit(1);
     });
-
-    mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected");
-
-    const server = app.listen(PORT, "127.0.0.1", () => {
-      console.log("Listening on", server.address());
-    });
-
-    server.on("error", (err) => {
-      console.error("Listen error:", err);
-    });
-
-    server.on("close", () => {
-      console.log("Server closed");
-    });
-  })
-  .catch((err) => {
-    console.error(err);
-  });
   

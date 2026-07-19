@@ -59,5 +59,6 @@ const userSchema = new mongoose.Schema(
 
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: "text" });
 
 module.exports = mongoose.model("User", userSchema);

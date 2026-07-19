@@ -151,7 +151,7 @@ const searchPosts = async (req, res, next) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const skip = (page - 1) * limit;
 
-        const filter = query ? { content: { $regex: query, $options: "i" } } : {};
+        const filter = query ? { $text: { $search: query } } : {};
 
         const totalPosts = await Post.countDocuments(filter);
         const totalPages = Math.ceil(totalPosts / limit);
@@ -159,7 +159,7 @@ const searchPosts = async (req, res, next) => {
 
         const posts = await Post.find(filter)
             .populate("author", postAuthorFields)
-            .sort({ createdAt: -1 })
+            .sort(query ? { score: { $meta: "textScore" } } : { createdAt: -1 })
             .skip(skip)
             .limit(limit);
 

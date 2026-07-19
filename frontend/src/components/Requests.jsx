@@ -14,12 +14,18 @@ function Requests() {
   const [searchQuery, setSearchQuery] = useState("");
   const debounceTimeoutRef = useRef(null);
 
+  // Pagination state for users list
+  const [usersPage, setUsersPage] = useState(1);
+  const [hasNextUsersPage, setHasNextUsersPage] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isFetchingNextUsers, setIsFetchingNextUsers] = useState(false);
+
   const availableUsers = users.filter(
     (user) => user.status !== "received" && user.status !== "friend"
   );
 
   useEffect(() => {
-    fetchUsers();
+    fetchInitialUsers();
     fetchRequests();
     return () => {
       if (debounceTimeoutRef.current) {
@@ -28,12 +34,17 @@ function Requests() {
     };
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchInitialUsers = async () => {
+    setIsLoadingUsers(true);
     try {
-      const data = await getUsers();
-      setUsers(data);
+      const data = await getUsers(1, 10);
+      setUsers(data.users || []);
+      setHasNextUsersPage(data.hasNextPage || false);
+      setUsersPage(1);
     } catch (error) {
       console.log("Error fetching users:", error);
+    } finally {
+      setIsLoadingUsers(false);
     }
   };
 
@@ -46,18 +57,43 @@ function Requests() {
     }
 
     if (!value.trim()) {
-      fetchUsers();
+      fetchInitialUsers();
       return;
     }
 
     debounceTimeoutRef.current = setTimeout(async () => {
+      setIsLoadingUsers(true);
       try {
-        const data = await searchUsers(value.trim());
-        setUsers(data);
+        const data = await searchUsers(value.trim(), 1, 10);
+        setUsers(data.users || []);
+        setUsersPage(1);
+        setHasNextUsersPage(data.hasNextPage || false);
       } catch (error) {
         console.error("Error searching users:", error);
+      } finally {
+        setIsLoadingUsers(false);
       }
     }, 400);
+  };
+
+  const handleLoadMoreUsers = async () => {
+    if (isFetchingNextUsers || !hasNextUsersPage) return;
+    setIsFetchingNextUsers(true);
+    try {
+      let data;
+      if (searchQuery.trim()) {
+        data = await searchUsers(searchQuery.trim(), usersPage + 1, 10);
+      } else {
+        data = await getUsers(usersPage + 1, 10);
+      }
+      setUsers((prev) => [...prev, ...(data.users || [])]);
+      setUsersPage((prevPage) => prevPage + 1);
+      setHasNextUsersPage(data.hasNextPage || false);
+    } catch (error) {
+      console.log("Error loading more users:", error);
+    } finally {
+      setIsFetchingNextUsers(false);
+    }
   };
 
   const fetchRequests = async () => {
@@ -111,7 +147,8 @@ function Requests() {
         const exists = prev.some((user) => (user._id || user.id) === senderId);
         if (exists) {
           return prev.map((user) =>
-            (user._id || user.id) === senderId? { ...user, status: "send" }: user);
+            (user._id || user.id) === senderId ? { ...user, status: "send" } : user
+          );
         }
         return [
           ...prev,
@@ -330,13 +367,32 @@ function Requests() {
                   </tr>
                 );
               })}
-              {availableUsers.length === 0 && (
+              {availableUsers.length === 0 && !isLoadingUsers && (
                 <tr>
                   <td className="text-secondary" colSpan="2">No users available.</td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {isLoadingUsers && (
+            <div className="text-center py-3 text-secondary">
+              <div className="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+              <span>Loading users...</span>
+            </div>
+          )}
+
+          {hasNextUsersPage && (
+            <div className="text-center mt-3">
+              <button 
+                className="btn btn-outline-info btn-sm" 
+                onClick={handleLoadMoreUsers}
+                disabled={isFetchingNextUsers}
+              >
+                {isFetchingNextUsers ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

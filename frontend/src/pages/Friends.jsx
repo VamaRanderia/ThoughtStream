@@ -1,24 +1,48 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import { getUsers } from "../services/userService";
+import { getFriends } from "../services/userService";
 import { useImageModal } from "../context/ImageModalContext";
 
 function Friends() {
   const [friends, setFriends] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const { openImageModal } = useImageModal();
 
   useEffect(() => {
-    const fetchFriends = async () => {
+    const fetchInitialFriends = async () => {
+      setIsLoading(true);
       try {
-        const users = await getUsers();
-        setFriends(users.filter((user) => user.status === "friend"));
+        const data = await getFriends(1, 10);
+        setFriends(data.friends || []);
+        setHasNextPage(data.hasNextPage || false);
+        setPage(1);
       } catch (error) {
         console.log("Error fetching friends:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchFriends();
+    fetchInitialFriends();
   }, []);
+
+  const handleLoadMore = async () => {
+    if (isFetchingNextPage || !hasNextPage) return;
+    setIsFetchingNextPage(true);
+    try {
+      const data = await getFriends(page + 1, 10);
+      setFriends((prev) => [...prev, ...(data.friends || [])]);
+      setPage((prevPage) => prevPage + 1);
+      setHasNextPage(data.hasNextPage || false);
+    } catch (error) {
+      console.log("Error loading more friends:", error);
+    } finally {
+      setIsFetchingNextPage(false);
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -67,13 +91,32 @@ function Friends() {
                   </tr>
                 );
               })}
-              {friends.length === 0 && (
+              {friends.length === 0 && !isLoading && (
                 <tr>
                   <td className="text-secondary">No friends yet.</td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {isLoading && (
+            <div className="text-center py-3 text-secondary">
+              <div className="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+              <span>Loading friends...</span>
+            </div>
+          )}
+
+          {hasNextPage && (
+            <div className="text-center mt-3">
+              <button 
+                className="btn btn-outline-info btn-sm" 
+                onClick={handleLoadMore}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
